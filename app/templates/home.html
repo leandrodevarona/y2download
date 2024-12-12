@@ -1,0 +1,41 @@
+<html lang="en">  
+<head>  
+    <meta charset="UTF-8">  
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">  
+    <title>Download Video and Audio from YouTube</title>  
+    <link href="{{ url_for('static', path='/home.css') }}" rel="stylesheet" />
+</head>  
+<body>  
+    <div class="container">  
+        <h1>Download Video and Audio from YouTube</h1>  
+        <div style="display: flex; justify-content: center; align-items: center;">  
+            <input   
+                type="text"  
+                id="Url_Path"  
+                placeholder="Place YouTube link here..."   
+                autocomplete="off"  
+            />  
+            <button   
+                title="Start"   
+                type="button"   
+                aria-label="Start"   
+                id="btn-submit"   
+                class="btn btn-lg"   
+                onclick="analyze(Url_Path.value);"  
+            >  
+                Start  
+            </button>  
+        </div>  
+    </div>  
+
+    <!-- Placeholder for Python function -->  
+    <script>  
+        function analyze(url) {  
+            // Placeholder for the Python function to analyze the URL  
+            console.log('Analyzing:', url);  
+            // Your Python integration logic goes here  
+            window.location.href = `/download?url=${url}`
+        }  
+    </script>  
+</body>  
+</html>
