@@ -1,5 +1,5 @@
 [tool.poetry]
-name = "movie-authenticity-checker"
+name = "y2download"
 version = "0.1.0"
 description = ""
 authors = ["leandrodevarona <soporte_1@danngos.com>"]
