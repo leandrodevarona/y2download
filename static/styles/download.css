@@ -1,0 +1,12 @@
+.container {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 2rem;
+}
+
+.container-img{
+    max-width: 200px;
+    max-height: 200px;
+    aspect-ratio: 1 / 1;
+    object-fit: cover;
+}

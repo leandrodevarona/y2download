@@ -1,0 +1,46 @@
+body {  
+  font-family: Arial, sans-serif;  
+  background-color: #f0f0f0; /* Light gray background */  
+  display: flex;  
+  justify-content: center;  
+  align-items: center;  
+  height: 100vh; /* Full height for centering */  
+  margin: 0;  
+}  
+.container {  
+  background-color: #fff; /* White background for form */  
+  border-radius: 10px;  
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);  
+  padding: 20px;  
+  text-align: center;  
+}  
+h1 {  
+  color: #333; /* Dark gray color for title */  
+}  
+#Url_Path {  
+  width: 600px;  
+  height: 60px;  
+  background-color: white;  
+  padding: 0px 60px 0px 6px;  
+  border: 5px solid red; /* Red border */  
+  border-radius: 5px; /* Rounded corners */  
+  font-size: 16px;  
+}  
+#btn-submit {  
+  width: 60px;  
+  height: 60px;  
+  color: white;  
+  background: red; /* Red background for button */  
+  border: none;  
+  border-radius: 5px; /* Rounded corners */  
+  padding: 10px;  
+  font-size: 16px;  
+  cursor: pointer;  
+  margin-left: 10px;  
+}  
+#btn-submit:hover {  
+  background-color: #d60000; /* Darker red on hover */  
+}  
+.download_options{
+  display:none
+}
