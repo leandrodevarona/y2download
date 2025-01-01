@@ -27,17 +27,53 @@
             </button>  
         </div>  
     </div>
-    <section class="download_options">
-
+    <section id="download_options" class="download_options">
+        <div id="loader" class="loader_container">
+            <span class="loader_text">Loading...</span>
+            <div class="loader"></div>
+        </div>
     </section>  
 
     <!-- Placeholder for Python function -->  
     <script>  
-
-        function show_download_options(url){
-            window.location.href = `/download-options?url=${url}`
+        function showLoader() {
+            const loader = document.getElementById('loader')
+            loader.style.display = 'flex'
         }
          
+        function hideLoader(){
+            const loader = document.getElementById('loader')
+            loader.style.display = 'none'
+        }
+
+        function show_download_options(url){
+            const iframe_src = `/download-options?url=${url}`;
+
+            // 1. Crear el iframe  
+            const iframe = document.createElement('iframe');  
+
+            // 2. Configurar atributos  
+            iframe.src = iframe_src; // Cambia esta URL por la que necesites  
+            iframe.frameBorder = '0';
+            iframe.style.display = 'none'
+            iframe.style.overflowY = 'auto'  
+            iframe.onload = () => {
+                hideLoader();
+
+                iframe.width = '100%';  
+                iframe.height = '300';
+                iframe.style.display = 'block'
+                
+            }
+
+            // 3. Seleccionar el elemento padre  
+            const elementoPadre = document.getElementById('download_options'); // Cambia 'miElemento' por el ID del elemento deseado  
+            elementoPadre.style.display = 'flex'
+            // 4. Agregar el iframe al elemento padre  
+            elementoPadre.appendChild(iframe); 
+
+            showLoader();
+        }
     </script>  
 </body>  
 </html>

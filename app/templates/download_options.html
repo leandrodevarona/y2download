@@ -8,12 +8,12 @@
 <body>  
     <div class="container">  
         <section>
-            <img class="container-img" src="{{thumbnail}}" alt="Video preview">
+            <img class="container_img" src="{{thumbnail}}" alt="Video preview">
         </section>
         <section>
             <!-- Video options -->
-            <div>
-                <table>
+            <div class="options_content">
+                <table class="options_table">
                     {% for option in video_options %}  
                     <tr>
                         <th>{{option.name}}</th>

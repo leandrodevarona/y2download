@@ -3,9 +3,11 @@ from fastapi.responses import HTMLResponse, RedirectResponse, FileResponse
 from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
 
-from app.utils.yt_dlp import download, validate, get_thumbnail_url, get_video_approx_size
-from app.utils.types.yt_dlp import Quality
-from app.utils.data import bytes_to_megabytes
+from app.services.yt_dlp import (download, 
+                                 validate, 
+                                 get_thumbnail_url, 
+                                 get_video_formats, 
+                                 get_download_options)
 
 app = FastAPI()
 
@@ -21,7 +23,7 @@ def home_view(request: Request):
 
 
 @app.get('/download-options/', response_class=HTMLResponse)
-def download_options(request: Request, url: str):
+async def download_options(request: Request, url: str):
     is_valid_url = validate(url)
 
     if not is_valid_url:
@@ -30,31 +32,15 @@ def download_options(request: Request, url: str):
 
         thumbnail_url = get_thumbnail_url(url)
 
-        # hightSize = bytes_to_megabytes(get_video_approx_size(url))
-        # mediumSize = bytes_to_megabytes(get_video_approx_size(url, Quality.MEDIUM))
-        # lowSize = bytes_to_megabytes(get_video_approx_size(url, Quality.LOW))
+        formats = get_video_formats(url)
+
+        options = get_download_options(formats, url, request.base_url)
 
         return templates.TemplateResponse(
             request=request, 
             name="download_options.html", 
             context = {  
-                'video_options': [
-                    {
-                        'name': 'MP4 best quality',
-                        'size': f'{30}Mb',
-                        'url': f'{request.base_url}download?quality={Quality.HIGHT.value}&url={url}',
-                    },
-                    {
-                        'name': f'{Quality.MEDIUM.value}p (.mp4)',
-                        'size': f'{15}Mb',
-                        'url': f'{request.base_url}download?quality={Quality.MEDIUM.value}&url={url}'
-                    },
-                    {
-                        'name': f'{Quality.LOW.value}p (.mp4)',
-                        'size': f'{7}Mb',
-                        'url': f'{request.base_url}download?quality={Quality.LOW.value}&url={url}'
-                    }
-                ],
+                'video_options': options,
                 'audio_option': 
                     {
                         'name': 'Audio (.m4a)',
@@ -69,12 +55,10 @@ def download_options(request: Request, url: str):
 @app.get('/download/', response_class=RedirectResponse | FileResponse)
 def download_video(request: Request, 
                    url: str, 
-                   quality: int, 
+                   format_id: int, 
                    is_audio: bool = False):
-    
-    quality = Quality.get_quality(quality)
 
-    file_path = download(url, quality)
+    file_path = download(url, format_id)
 
     if file_path == 'error_invalid_url':
         return RedirectResponse(f'{request.base_url}{file_path}')
