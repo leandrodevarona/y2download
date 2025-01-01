@@ -2,6 +2,7 @@ import os
 import yt_dlp as yt
 from app.utils.random_name import get_random_name
 from app.utils.types.yt_dlp import Quality
+from app.utils.types.yt_qualities import YtQuality
 
 def validate(url):
     try:
@@ -13,7 +14,7 @@ def validate(url):
         with yt.YoutubeDL(ydl_opts) as ydl:
             info_dict = ydl.extract_info(url, download=False)
 
-            if info_dict['extractor'] is 'youtube': 
+            if info_dict['extractor'] == 'youtube': 
                 return True   
             
         return False    
@@ -59,7 +60,37 @@ def get_video_approx_size(url, quality: Quality = Quality.HIGHT):
             return info_dict['filesize_approx']
     except:
         return None
+
+
+def get_video_formats(url: str):
+     # Crear una instancia de yt_dlp.YoutubeDL con las opciones adecuadas
+    ydl_opts = {
+        'quiet': True,  # Para no mostrar demasiada salida en consola
+        'extract_flat': True,  # Extraer solo la información sin descargar el video
+    }
+
+    with yt.YoutubeDL(ydl_opts) as ydl:
+        # Obtener la información del video
+        info_dict = ydl.extract_info(url, download=False)  # No descargar, solo obtener información
+        
+        # Acceder a la lista de formatos
+        formats = info_dict.get('formats', [])
+
+        return formats
     
+
+def get_format_str(formats: list, quality: Quality):
+
+    filter_formats = [f for f in formats if f.get('height', None) is quality.value and f.get('tbr', None) is not None]
+
+    min_bitrate = min(filter_formats, key=lambda format: format['tbr'])
+
+    format_id = min_bitrate.get('format_id', 137)
+
+    format_str = f"{format_id}+ba[ext=m4a]/{format_id}+ba/bv*[ext=mp4]+ba[ext=m4a]/b[ext=mp4]/bv*+ba/b"
+
+    return format_str
+
 
 def download(url, quality: Quality = Quality.HIGHT):
     try:
@@ -67,17 +98,12 @@ def download(url, quality: Quality = Quality.HIGHT):
 
         ffmpeg_path = os.path.join(os.path.dirname(__file__), 'ffmpeg', 'bin', 'ffmpeg.exe')
 
-        str_quality = ''
+        formats = get_video_formats(url)
 
-        if quality != Quality.HIGHT:
-            str_quality = f'[height<={quality.value}]'
-
-        format = f"137+ba[ext=m4a]{str_quality}/137+ba/bv*[ext=mp4]{str_quality}+ba[ext=m4a]/b[ext=mp4]{str_quality}/bv*+ba/b"
-
-        print(format)
+        format_str = get_format_str(formats, quality)
 
         ydl_opts = {
-            "format": format,
+            "format": format_str,
             "final_ext": "mp4",
             "ffmpeg_location": ffmpeg_path,
             'outtmpl': f'static/{name}.' + '%(ext)s'

@@ -1,29 +1,40 @@
 import yt_dlp as yt
 from app.utils.types.yt_dlp import Quality
 
-def get_video_approx_size(url, quality: Quality = Quality.HIGHT):
-    try:
+def get_video_formats(url: str):
+     # Crear una instancia de yt_dlp.YoutubeDL con las opciones adecuadas
+    ydl_opts = {
+        'quiet': True,  # Para no mostrar demasiada salida en consola
+        'extract_flat': True,  # Extraer solo la información sin descargar el video
+    }
 
-        format = "bestvideo/best"
+    with yt.YoutubeDL(ydl_opts) as ydl:
+        # Obtener la información del video
+        info_dict = ydl.extract_info(url, download=False)  # No descargar, solo obtener información
+        
+        # Acceder a la lista de formatos
+        formats = info_dict.get('formats', [])
 
-        print(
-            'La quality que llega',
-            quality
-        )
+        return formats
+    
 
-        if quality is not Quality.HIGHT:
-            format = f'bestvideo[height<={quality.value}]'
+def get_format_str(formats: list, quality: Quality):
 
-        ydl_opts = {
-            "format": format,
-            'outtmpl': 'example' + '%(ext)s'
-        }
+    filter_formats = [f for f in formats if f.get('height', None) == quality.value and f.get('tbr', None) != None]
 
-        with yt.YoutubeDL(ydl_opts) as ydl:
-            info_dict = ydl.extract_info(url, download=False)
+    min_bitrate = min(filter_formats, key=lambda format: format['tbr'])
 
-            return info_dict['filesize_approx']
-    except:
-        return None
+    format_id = min_bitrate.get('format_id', 137)
 
-print(get_video_approx_size('https://www.youtube.com/shorts/bg4I_NtOshE', Quality.LOW))
+    format_str = f"{format_id}+ba[ext=m4a]/{format_id}+ba/bv*[ext=mp4]+ba[ext=m4a]/b[ext=mp4]/bv*+ba/b"
+
+    return format_str
+
+# URL del video de YouTube
+url_video = "https://www.youtube.com/watch?v=dQw4w9WgXcQ"
+
+formatos = get_video_formats(url_video)
+
+format_str = get_format_str(formatos, Quality.MEDIUM)
+
+print(format_str)

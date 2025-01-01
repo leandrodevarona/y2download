@@ -30,9 +30,9 @@ def download_options(request: Request, url: str):
 
         thumbnail_url = get_thumbnail_url(url)
 
-        hightSize = bytes_to_megabytes(get_video_approx_size(url))
-        mediumSize = bytes_to_megabytes(get_video_approx_size(url, Quality.MEDIUM))
-        lowSize = bytes_to_megabytes(get_video_approx_size(url, Quality.LOW))
+        # hightSize = bytes_to_megabytes(get_video_approx_size(url))
+        # mediumSize = bytes_to_megabytes(get_video_approx_size(url, Quality.MEDIUM))
+        # lowSize = bytes_to_megabytes(get_video_approx_size(url, Quality.LOW))
 
         return templates.TemplateResponse(
             request=request, 
@@ -41,25 +41,25 @@ def download_options(request: Request, url: str):
                 'video_options': [
                     {
                         'name': 'MP4 best quality',
-                        'size': f'{hightSize}Mb',
-                        'url': f'{request.base_url}download?url={url}&quality={Quality.HIGHT.value}',
+                        'size': f'{30}Mb',
+                        'url': f'{request.base_url}download?quality={Quality.HIGHT.value}&url={url}',
                     },
                     {
                         'name': f'{Quality.MEDIUM.value}p (.mp4)',
-                        'size': f'{mediumSize}Mb',
-                        'url': f'{request.base_url}download?url={url}&quality={Quality.MEDIUM.value}'
+                        'size': f'{15}Mb',
+                        'url': f'{request.base_url}download?quality={Quality.MEDIUM.value}&url={url}'
                     },
                     {
                         'name': f'{Quality.LOW.value}p (.mp4)',
-                        'size': f'{lowSize}Mb',
-                        'url': f'{request.base_url}download?url={url}&quality={Quality.LOW.value}'
+                        'size': f'{7}Mb',
+                        'url': f'{request.base_url}download?quality={Quality.LOW.value}&url={url}'
                     }
                 ],
                 'audio_option': 
                     {
                         'name': 'Audio (.m4a)',
                         'size': '3Mb',
-                        'url': f'{request.base_url}download?url={url}&is_audio=true'
+                        'url': f'{request.base_url}download?is_audio=true&url={url}'
                     },
                 'thumbnail': thumbnail_url
             }
