@@ -1,79 +1,99 @@
-<html lang="en">  
-<head>  
-    <meta charset="UTF-8">  
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">  
-    <title>YouTube downloader</title>  
-    <link href="{{ url_for('static', path='/styles/home.css') }}" rel="stylesheet" />
-</head>  
-<body>  
-    <div class="container">  
-        <h1>Download Video and Audio from YouTube</h1>  
-        <div style="display: flex; justify-content: center; align-items: center;">  
-            <input   
-                type="text"  
-                id="Url_Path"  
-                placeholder="Place YouTube link here..."   
-                autocomplete="off"  
-            />  
-            <button   
-                title="Start"   
-                type="button"   
-                aria-label="Start"   
-                id="btn-submit"   
-                class="btn btn-lg"   
-                onclick="show_download_options(Url_Path.value);"  
-            >  
-                Start  
-            </button>  
-        </div>  
-    </div>
-    <section id="download_options" class="download_options">
-        <div id="loader" class="loader_container">
-            <span class="loader_text">Loading...</span>
-            <div class="loader"></div>
-        </div>
-    </section>  
+<html lang="en">
 
-    <!-- Placeholder for Python function -->  
-    <script>  
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>YouTube downloader</title>
+    <link href="{{ url_for('static', path='/styles/home.css') }}" rel="stylesheet" />
+</head>
+
+<body>
+    <div class="container">
+        <section class="download_form__content">
+            <h1>Download Video and Audio from YouTube</h1>
+            <form onsubmit="show_download_options(event)">
+                <input type="text" id="Url_Path" name="url" placeholder="Place YouTube link here..." autocomplete="off" required/>
+                <button title="Start" type="submit" aria-label="Start" id="btn-submit" class="btn btn-lg">
+                    Start
+                </button>
+            </form>
+        </section>
+
+        <section id="download_options" class="download_options">
+            <div id="loader" class="loader_container">
+                <span class="loader_text">Loading...</span>
+                <div class="loader"></div>
+            </div>
+        </section>
+    </div>
+
+    <!-- Placeholder for Python function -->
+    <script>
         function showLoader() {
             const loader = document.getElementById('loader')
             loader.style.display = 'flex'
         }
-         
-        function hideLoader(){
+
+        function hideLoader() {
             const loader = document.getElementById('loader')
             loader.style.display = 'none'
         }
 
-        function show_download_options(url){
+        function show_download_options(event) {
+            event.preventDefault();  
+
+            const url = event.target.url.value;
+
             const iframe_src = `/download-options?url=${url}`;
 
+            const existing_iframe = document.getElementById('iframe_download_options');
+
+            if (existing_iframe) {
+                let domain = window.location.href;
+                domain = domain.subtsring(0, domain.length - 1);
+
+                const new_src = domain + iframe_src;
+
+                const existing_src = existing_iframe.src;
+
+                if(new_src == existing_src) return;
+
+                existing_iframe.remove();
+            }
+
             // 1. Crear el iframe  
-            const iframe = document.createElement('iframe');  
+            const iframe = document.createElement('iframe');
+
+            const btnSubmit = document.getElementById('btn-submit');
 
             // 2. Configurar atributos  
             iframe.src = iframe_src; // Cambia esta URL por la que necesites  
+            iframe.id = 'iframe_download_options'
             iframe.frameBorder = '0';
             iframe.style.display = 'none'
-            iframe.style.overflowY = 'auto'  
+            iframe.style.overflowY = 'auto'
             iframe.onload = () => {
+                btnSubmit.disabled = false;
+
                 hideLoader();
 
-                iframe.width = '100%';  
+                iframe.width = '100%';
                 iframe.height = '300';
                 iframe.style.display = 'block'
-                
+
             }
 
             // 3. Seleccionar el elemento padre  
             const elementoPadre = document.getElementById('download_options'); // Cambia 'miElemento' por el ID del elemento deseado  
             elementoPadre.style.display = 'flex'
             // 4. Agregar el iframe al elemento padre  
-            elementoPadre.appendChild(iframe); 
+            elementoPadre.appendChild(iframe);
+
+            btnSubmit.disabled = true;
 
             showLoader();
         }
-    </script>  
-</body>  
+    </script>
+</body>
+
 </html>

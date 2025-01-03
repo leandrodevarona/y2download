@@ -50,11 +50,15 @@ def get_video_formats(url: str):
     with yt.YoutubeDL(ydl_opts) as ydl:
         # Obtener la información del video
         info_dict = ydl.extract_info(url, download=False)  # No descargar, solo obtener información
+
+        name = get_random_name()
+
+        fullname = info_dict.get('fulltitle', name)
         
         # Acceder a la lista de formatos
         formats = info_dict.get('formats', [])
 
-        return formats
+        return [fullname, formats]
 
 
 def get_download_options(formats: list, video_url: str, base_url: str):

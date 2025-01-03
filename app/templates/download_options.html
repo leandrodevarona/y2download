@@ -1,20 +1,28 @@
-<html lang="en">  
-<head>  
-    <meta charset="UTF-8">  
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">  
-    <title>Download Video and Audio from YouTube</title>  
-    <link href="{{ url_for('static', path='/styles/download.css') }}" rel="stylesheet" />
-</head>  
-<body>  
-    <div class="container">  
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Download Video and Audio from YouTube</title>
+    <link href="{{ url_for('static', path='/styles/download_options.css') }}" rel="stylesheet" />
+</head>
+
+<body>
+    <div class="container">
         <section>
             <img class="container_img" src="{{thumbnail}}" alt="Video preview">
+            <span>{{fullname}}</span>
         </section>
         <section>
+            <div class="tabs">
+                <div class="tab active" onclick="showTab('videoTab')">Video</div>
+                <div class="tab" onclick="showTab('audioTab')">Audio</div>
+            </div>
+
             <!-- Video options -->
-            <div class="options_content">
+            <div id="videoTab" class="tabContent">
                 <table class="options_table">
-                    {% for option in video_options %}  
+                    {% for option in video_options %}
                     <tr>
                         <th>{{option.name}}</th>
                         <th>{{option.size}}</th>
@@ -23,13 +31,14 @@
                                 Descargar
                             </a>
                         </th>
-                    </tr> 
-                    {% endfor %}  
+                    </tr>
+                    {% endfor %}
                 </table>
             </div>
+
             <!-- Audio options -->
-            <div>
-                <table>
+            <div id="audioTab" class="tabContent hidden">
+                <table class="options_table">
                     <tr>
                         <th>{{audio_option.name}}</th>
                         <th>{{audio_option.size}}</th>
@@ -44,11 +53,30 @@
         </section>
     </div>
 
-    <!-- Placeholder for Python function -->  
-    <script>  
+    <!-- Placeholder for Python function -->
+    <script>
         function analyze(url) {
             window.location.href = `/download?url=${url}`
+        }
+
+        function showTab(tabName) {
+            const videoTab = document.getElementById('videoTab');
+            const audioTab = document.getElementById('audioTab');
+            const tabs = document.querySelectorAll('.tab');
+
+            if (tabName === 'videoTab') {
+                videoTab.classList.remove('hidden');
+                audioTab.classList.add('hidden');
+                tabs[0].classList.add('active');
+                tabs[1].classList.remove('active');
+            } else {
+                audioTab.classList.remove('hidden');
+                videoTab.classList.add('hidden');
+                tabs[1].classList.add('active');
+                tabs[0].classList.remove('active');
+            }
         }  
-    </script>  
-</body>  
+    </script>
+</body>
+
 </html>

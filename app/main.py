@@ -41,7 +41,7 @@ async def download_options(request: Request, url: str):
 
         thumbnail_url = get_thumbnail_url(url)
 
-        formats = get_video_formats(url)
+        fullname, formats = get_video_formats(url)
 
         options = get_download_options(formats, url, request.base_url)
 
@@ -49,6 +49,7 @@ async def download_options(request: Request, url: str):
             request=request, 
             name="download_options.html", 
             context = {  
+                'fullname': fullname,
                 'video_options': options,
                 'audio_option': 
                     {
