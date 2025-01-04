@@ -3,8 +3,11 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>YouTube downloader</title>
+    <meta name="description" content="YouTube free downloader" />
+    <meta name="robots" content="index, follow" />
+    <title>YouTube Downloader</title>
     <link href="{{ url_for('static', path='/styles/home.css') }}" rel="stylesheet" />
+    <link rel="icon" href="{{ url_for('static', path='/assets/download_logo.svg') }}" type="image/x-icon"/>
 </head>
 
 <body>
@@ -49,15 +52,6 @@
             const existing_iframe = document.getElementById('iframe_download_options');
 
             if (existing_iframe) {
-                let domain = window.location.href;
-                domain = domain.subtsring(0, domain.length - 1);
-
-                const new_src = domain + iframe_src;
-
-                const existing_src = existing_iframe.src;
-
-                if(new_src == existing_src) return;
-
                 existing_iframe.remove();
             }
 

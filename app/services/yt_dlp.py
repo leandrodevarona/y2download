@@ -61,7 +61,7 @@ def get_video_formats(url: str):
         return [fullname, formats]
 
 
-def get_download_options(formats: list, video_url: str, base_url: str):
+def get_download_options(formats: list, video_url: str, base_url: str, fullname: str):
     available_resolutions = [f['height'] for f in formats if f.get('height', None) != None and f.get('tbr', None) != None ]
 
     available_resolutions = set(available_resolutions)
@@ -82,11 +82,13 @@ def get_download_options(formats: list, video_url: str, base_url: str):
 
         file_approx = bytes_to_megabytes(file_approx)
 
+        resolution = f'{f.get('height', None)}p'
+
         options.append(
             {
-                'name': f'{f.get('height', None)}p',
+                'name': resolution,
                 'size': f'{'_' if file_approx == 0 else file_approx} Mb',
-                'url': f'{base_url}download?format_id={f.get('format_id', 137)}&url={video_url}',
+                'url': f'{base_url}download?format_id={f.get('format_id', 137)}&fullname={fullname}&resolution={resolution}&url={video_url}',
             }
         )
     
@@ -100,9 +102,8 @@ def get_format_str(format_id: str):
     return format_str
 
 
-def download(url, format_id: int):
+def download(url, format_id: int, fullname: str, resolution: str):
     try:
-        name = get_random_name()
 
         ffmpeg_path = os.path.join(os.path.dirname(__file__), 'ffmpeg', 'bin', 'ffmpeg.exe')
 
@@ -112,7 +113,7 @@ def download(url, format_id: int):
             "format": format_str,
             "final_ext": "mp4",
             "ffmpeg_location": ffmpeg_path,
-            'outtmpl': f'static/{name}.' + '%(ext)s'
+            'outtmpl': f'static/{fullname}({resolution}).' + '%(ext)s'
         }  
 
         with yt.YoutubeDL(ydl_opts) as ydl:
@@ -125,8 +126,15 @@ def download(url, format_id: int):
 
             ext = info_dict['ext']
 
-            file_path = f'static/{name}.{ext}'
+            file_path = f'static/{fullname}({resolution}).{ext}'
 
             return file_path
     except:
         return 'error_invalid_url'
+    
+
+def delete_file(file_path: str):
+    if os.path.exists(file_path):
+        os.unlink(file_path)
+    else:
+        raise Exception({'details': 'No file found'})

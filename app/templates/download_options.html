@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Download Video and Audio from YouTube</title>
     <link href="{{ url_for('static', path='/styles/download_options.css') }}" rel="stylesheet" />
+    <link rel="icon" href="{{ url_for('static', path='/assets/download_logo.svg') }}" type="image/x-icon" />
 </head>
 
 <body>
@@ -27,9 +28,11 @@
                         <th>{{option.name}}</th>
                         <th>{{option.size}}</th>
                         <th>
-                            <a href="{{option.url}}">
-                                Descargar
-                            </a>
+                            <button id="{{option.name}}"
+                                onclick="initDownload('{{ option.url }}', '{{ option.name }}');">
+                                <span id="span_{{option.name}}">Descargar</span>
+                                <div id="loader_{{option.name}}" class="dots_loader" hidden></div>
+                            </button>
                         </th>
                     </tr>
                     {% endfor %}
@@ -75,8 +78,65 @@
                 tabs[1].classList.add('active');
                 tabs[0].classList.remove('active');
             }
-        }  
+        }
+
+        function showLoader(name) {
+
+            const button = document.getElementById(name);
+            const span = document.getElementById(`span_${name}`);
+            const loader = document.getElementById(`loader_${name}`)
+
+            button.disabled = true;
+            span.hidden = true;
+            loader.hidden = false;
+
+        }
+
+        function hiddenLoader(name) {
+
+            const button = document.getElementById(name);
+            const span = document.getElementById(`span_${name}`);
+            const loader = document.getElementById(`loader_${name}`)
+
+            button.disabled = false;
+            span.hidden = false;
+            loader.hidden = true;
+
+        }
+
+        async function initDownload(url, name) {
+
+            showLoader(name);
+
+            try {
+                let response = await fetch(url);
+                if (!response.ok) throw new Error('Error en la red');
+
+                const data = (await response.json())
+
+                const domain = window.location.origin;
+
+                const file_path = domain + '/' + data.file_path;
+
+                const link = document.createElement('a');
+                link.href = file_path;
+                link.download = '';
+                link.click();
+
+                hiddenLoader(name);
+
+                setTimeout(async () => {
+                    await fetch(`/detele-file?file_path=${data.file_path}`,
+                        {
+                            method: 'DELETE'
+                        });
+                }, 500)
+
+            } catch (error) {
+                console.error('Hubo un problema con la descarga:', error);
+            }
+
+        }
+
     </script>
 </body>
-
-</html>

@@ -1,5 +1,6 @@
 from fastapi import FastAPI, Request
-from fastapi.responses import HTMLResponse, RedirectResponse, FileResponse
+from fastapi.responses import HTMLResponse, RedirectResponse, JSONResponse, Response
+from fastapi import status
 from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
 
@@ -7,7 +8,8 @@ from app.services.yt_dlp import (download,
                                  validate, 
                                  get_thumbnail_url, 
                                  get_video_formats, 
-                                 get_download_options)
+                                 get_download_options,
+                                 delete_file)
 from fastapi.middleware.cors import CORSMiddleware
 
 app = FastAPI()
@@ -43,7 +45,7 @@ async def download_options(request: Request, url: str):
 
         fullname, formats = get_video_formats(url)
 
-        options = get_download_options(formats, url, request.base_url)
+        options = get_download_options(formats, url, request.base_url, fullname)
 
         return templates.TemplateResponse(
             request=request, 
@@ -62,20 +64,31 @@ async def download_options(request: Request, url: str):
         )
 
 
-@app.get('/download/', response_class=RedirectResponse | FileResponse)
+@app.get('/download/', response_class=RedirectResponse | JSONResponse)
 def download_video(request: Request, 
-                   url: str, 
+                   url: str,
+                   fullname: str, 
                    format_id: int, 
+                   resolution: str,
                    is_audio: bool = False):
 
-    file_path = download(url, format_id)
+    file_path = download(url, format_id, fullname, resolution)
 
     if file_path == 'error_invalid_url':
         return RedirectResponse(f'{request.base_url}{file_path}')
 
-    file_name = file_path.split("/")[-1]
+    return JSONResponse({'file_path': file_path}, status_code=200)
 
-    return FileResponse(file_path, filename=file_name, media_type='video/mp4')
+
+@app.delete('/detele-file/', response_class=Response)
+def delete_static_file(request: Request, file_path: str):
+
+    try:
+        delete_file(file_path)
+
+        return Response(status_code=status.HTTP_204_NO_CONTENT)
+    except:
+        return Response(status_code=status.HTTP_404_NOT_FOUND)
 
 
 @app.get('/error_invalid_url')
