@@ -84,7 +84,7 @@ def get_download_options(formats: list,
         options.append(
             {
                 'name': resolution,
-                'size': f'{'_' if file_approx == 0 else file_approx} Mb',
+                'size': f'{"_" if file_approx == 0 else file_approx} Mb',
                 'url': f'{base_url}download?format_id=\
                     {f.get("format_id", 137)}&fullname={fullname}\
                         &resolution={resolution}&url={video_url}',
