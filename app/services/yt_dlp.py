@@ -1,7 +1,7 @@
 import os
 import yt_dlp as yt
-from app.utils.random_name import get_random_name
 from app.utils.data import bytes_to_megabytes
+from app.utils.strings import clean_file_name
 
 def validate(url):
     try:
@@ -20,45 +20,32 @@ def validate(url):
     
     except:
         return False
-    
 
-def get_thumbnail_url(url):
-    try:
-
-        ydl_opts = {
-            "format": "bestvideo/best",
-            'outtmpl': 'example' + '%(ext)s'
-        }
-
-        with yt.YoutubeDL(ydl_opts) as ydl:
-            info_dict = ydl.extract_info(url, download=False)
-
-            video_id = info_dict['display_id']
-
-            return f'https://img.youtube.com/vi/{video_id}/maxresdefault.jpg'
-    except:
-        return None
-
-
-def get_video_formats(url: str):
-     # Crear una instancia de yt_dlp.YoutubeDL con las opciones adecuadas
+def get_video_info(url: str):
+    # Crear una instancia de yt_dlp.YoutubeDL con las opciones adecuadas
     ydl_opts = {
         'quiet': True,  # Para no mostrar demasiada salida en consola
-        'extract_flat': True,  # Extraer solo la información sin descargar el video
+        # Extraer solo la información sin descargar el video
+        'extract_flat': True,
     }
 
     with yt.YoutubeDL(ydl_opts) as ydl:
         # Obtener la información del video
-        info_dict = ydl.extract_info(url, download=False)  # No descargar, solo obtener información
+        # No descargar, solo obtener información
+        info_dict = ydl.extract_info(url, download=False)
 
-        name = get_random_name()
+        video_id = info_dict['display_id']
 
-        fullname = info_dict.get('fulltitle', name)
-        
+        fullname = info_dict.get('fulltitle', video_id)
+
+        fullname = clean_file_name(fullname)
+
+        thumbnail = f'https://img.youtube.com/vi/{video_id}/maxresdefault.jpg'
+
         # Acceder a la lista de formatos
         formats = info_dict.get('formats', [])
 
-        return [fullname, formats]
+        return [fullname, formats, thumbnail]
 
 
 def get_download_options(formats: list, video_url: str, base_url: str, fullname: str):
@@ -105,7 +92,8 @@ def get_format_str(format_id: str):
 def download(url, format_id: int, fullname: str, resolution: str):
     try:
 
-        ffmpeg_path = os.path.join(os.path.dirname(__file__), 'ffmpeg', 'bin', 'ffmpeg.exe')
+        ffmpeg_path = os.path.join(os.path.dirname(
+            __file__), 'ffmpeg', 'bin', 'ffmpeg.exe')
 
         format_str = get_format_str(format_id)
 
@@ -114,22 +102,25 @@ def download(url, format_id: int, fullname: str, resolution: str):
             "final_ext": "mp4",
             "ffmpeg_location": ffmpeg_path,
             'outtmpl': f'static/{fullname}({resolution}).' + '%(ext)s'
-        }  
+        }
 
         with yt.YoutubeDL(ydl_opts) as ydl:
-            is_valid_url = validate(url)
+            info_dict = ydl.extract_info(url, download=False)
+
+            is_valid_url = info_dict['extractor'] == 'youtube'
 
             if not is_valid_url:
                 return 'error_invalid_url'
-            
-            info_dict = ydl.extract_info(url, download=True)
+
+            ydl.download([url])
 
             ext = info_dict['ext']
 
             file_path = f'static/{fullname}({resolution}).{ext}'
 
             return file_path
-    except:
+    except Exception as e:
+        print(e)
         return 'error_invalid_url'
     
 

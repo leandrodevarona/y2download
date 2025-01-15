@@ -5,9 +5,8 @@ from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
 
 from app.services.yt_dlp import (download, 
-                                 validate, 
-                                 get_thumbnail_url, 
-                                 get_video_formats, 
+                                 validate,
+                                 get_video_info, 
                                  get_download_options,
                                  delete_file)
 from fastapi.middleware.cors import CORSMiddleware
@@ -41,9 +40,7 @@ async def download_options(request: Request, url: str):
         return RedirectResponse(f'{request.base_url}error_invalid_url')
     else:
 
-        thumbnail_url = get_thumbnail_url(url)
-
-        fullname, formats = get_video_formats(url)
+        fullname, formats, thumbnail = get_video_info(url)
 
         options = get_download_options(formats, url, request.base_url, fullname)
 
@@ -59,7 +56,7 @@ async def download_options(request: Request, url: str):
                         'size': '3Mb',
                         'url': f'{request.base_url}download?is_audio=true&url={url}'
                     },
-                'thumbnail': thumbnail_url
+                'thumbnail': thumbnail
             }
         )
 
@@ -80,7 +77,7 @@ def download_video(request: Request,
     return JSONResponse({'file_path': file_path}, status_code=200)
 
 
-@app.delete('/detele-file/', response_class=Response)
+@app.delete('/delete-file/', response_class=Response)
 def delete_static_file(request: Request, file_path: str):
 
     try:
