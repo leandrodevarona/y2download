@@ -14,7 +14,7 @@ def validate(url):
         with yt.YoutubeDL(ydl_opts) as ydl:
             info_dict = ydl.extract_info(url, download=False)
 
-            if info_dict['extractor'] == 'youtube':
+            if info_dict["extractor"] == 'youtube':
                 return True
 
         return False
@@ -37,16 +37,16 @@ def get_video_info(url: str):
         # No descargar, solo obtener información
         info_dict = ydl.extract_info(url, download=False)
 
-        video_id = info_dict['display_id']
+        video_id = info_dict["display_id"]
 
-        fullname = info_dict['fulltitle']
+        fullname = info_dict.get("fulltitle", video_id)
 
         fullname = clean_file_name(fullname)
 
         thumbnail = f'https://img.youtube.com/vi/{video_id}/maxresdefault.jpg'
 
         # Acceder a la lista de formatos
-        formats = info_dict['formats']
+        formats = info_dict.get("formats", [])
 
         return [fullname, formats, thumbnail]
 
@@ -55,35 +55,38 @@ def get_download_options(formats: list,
                          video_url: str,
                          base_url: str,
                          fullname: str):
-    available_resolutions = [f['height'] for f in formats if f['height']
-                             is not None and f['tbr'] is not None]
+    available_resolutions = [f["height"]
+                             for f in formats if f.get("height", None)
+                             is not None and f.get("tbr", None) is not None]
 
     available_resolutions = set(available_resolutions)
 
     min_bitrate_formats = []
 
     for resolution in available_resolutions:
-        filter_formats = [f for f in formats if f['height'] == resolution]
+        filter_formats = [f
+                          for f in formats
+                          if f.get("height", None) == resolution]
 
-        min_bitrate = min(filter_formats, key=lambda format: format['tbr'])
+        min_bitrate = min(filter_formats, key=lambda format: format["tbr"])
 
         min_bitrate_formats.append(min_bitrate)
 
     options = []
 
     for f in min_bitrate_formats:
-        file_approx = f['filesize_approx']
+        file_approx = f.get("filesize_approx", 0)
 
         file_approx = bytes_to_megabytes(file_approx)
 
-        resolution = f'{f['height']}p'
+        resolution = f'{f.get("height", None)}p'
 
         options.append(
             {
                 'name': resolution,
                 'size': f'{'_' if file_approx == 0 else file_approx} Mb',
                 'url': f'{base_url}download?format_id=\
-                    {f['format_id']}&fullname={fullname}\
+                    {f.get("format_id", 137)}&fullname={fullname}\
                         &resolution={resolution}&url={video_url}',
             }
         )
@@ -117,14 +120,14 @@ def download(url, format_id: int, fullname: str, resolution: str):
         with yt.YoutubeDL(ydl_opts) as ydl:
             info_dict = ydl.extract_info(url, download=False)
 
-            is_valid_url = info_dict['extractor'] == 'youtube'
+            is_valid_url = info_dict["extractor"] == 'youtube'
 
             if not is_valid_url:
                 return 'error_invalid_url'
 
             ydl.download([url])
 
-            ext = info_dict['ext']
+            ext = info_dict["ext"]
 
             file_path = f'static/{fullname}({resolution}).{ext}'
 
