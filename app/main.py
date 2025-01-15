@@ -1,12 +1,15 @@
 from fastapi import FastAPI, Request
-from fastapi.responses import HTMLResponse, RedirectResponse, JSONResponse, Response
+from fastapi.responses import (HTMLResponse,
+                               RedirectResponse,
+                               JSONResponse,
+                               Response)
 from fastapi import status
 from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
 
-from app.services.yt_dlp import (download, 
+from app.services.yt_dlp import (download,
                                  validate,
-                                 get_video_info, 
+                                 get_video_info,
                                  get_download_options,
                                  delete_file)
 from fastapi.middleware.cors import CORSMiddleware
@@ -18,7 +21,8 @@ app.add_middleware(
     CORSMiddleware,
     allow_origins=["*"],  # Permite solicitudes desde cualquier origen
     allow_credentials=True,
-    allow_methods=["*"],  # Permite todos los métodos (GET, POST, PUT, DELETE, etc.)
+    # Permite todos los métodos (GET, POST, PUT, DELETE, etc.)
+    allow_methods=["*"],
     allow_headers=["*"],  # Permite todos los encabezados
 )
 
@@ -26,11 +30,13 @@ app.mount("/static", StaticFiles(directory="static"), name="static")
 
 templates = Jinja2Templates(directory="app/templates")
 
+
 @app.get('/', response_class=HTMLResponse)
 def home_view(request: Request):
     return templates.TemplateResponse(
         request=request, name="home.html"
     )
+
 
 @app.get('/download-options/', response_class=HTMLResponse)
 async def download_options(request: Request, url: str):
@@ -42,19 +48,21 @@ async def download_options(request: Request, url: str):
 
         fullname, formats, thumbnail = get_video_info(url)
 
-        options = get_download_options(formats, url, request.base_url, fullname)
+        options = get_download_options(
+            formats, url, request.base_url, fullname)
 
         return templates.TemplateResponse(
-            request=request, 
-            name="download_options.html", 
-            context = {  
+            request=request,
+            name="download_options.html",
+            context={
                 'fullname': fullname,
                 'video_options': options,
-                'audio_option': 
+                'audio_option':
                     {
                         'name': 'Audio (.m4a)',
                         'size': '3Mb',
-                        'url': f'{request.base_url}download?is_audio=true&url={url}'
+                        'url': f'{request.base_url}\
+                            download?is_audio=true&url={url}'
                     },
                 'thumbnail': thumbnail
             }
@@ -62,10 +70,10 @@ async def download_options(request: Request, url: str):
 
 
 @app.get('/download/', response_class=RedirectResponse | JSONResponse)
-def download_video(request: Request, 
+def download_video(request: Request,
                    url: str,
-                   fullname: str, 
-                   format_id: int, 
+                   fullname: str,
+                   format_id: int,
                    resolution: str,
                    is_audio: bool = False):
 
@@ -84,7 +92,8 @@ def delete_static_file(request: Request, file_path: str):
         delete_file(file_path)
 
         return Response(status_code=status.HTTP_204_NO_CONTENT)
-    except:
+    except Exception as e:
+        print(e)
         return Response(status_code=status.HTTP_404_NOT_FOUND)
 
 
