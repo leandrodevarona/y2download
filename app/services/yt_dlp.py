@@ -39,14 +39,14 @@ def get_video_info(url: str):
 
         video_id = info_dict['display_id']
 
-        fullname = info_dict.get('fulltitle', video_id)
+        fullname = info_dict['fulltitle']
 
         fullname = clean_file_name(fullname)
 
         thumbnail = f'https://img.youtube.com/vi/{video_id}/maxresdefault.jpg'
 
         # Acceder a la lista de formatos
-        formats = info_dict.get('formats', [])
+        formats = info_dict['formats']
 
         return [fullname, formats, thumbnail]
 
@@ -55,16 +55,15 @@ def get_download_options(formats: list,
                          video_url: str,
                          base_url: str,
                          fullname: str):
-    available_resolutions = [f['height'] for f in formats if f.get(
-        'height', None) is not None and f.get('tbr', None) is not None]
+    available_resolutions = [f['height'] for f in formats if f['height']
+                             is not None and f['tbr'] is not None]
 
     available_resolutions = set(available_resolutions)
 
     min_bitrate_formats = []
 
     for resolution in available_resolutions:
-        filter_formats = [f for f in formats if f.get(
-            'height', None) == resolution]
+        filter_formats = [f for f in formats if f['height'] == resolution]
 
         min_bitrate = min(filter_formats, key=lambda format: format['tbr'])
 
@@ -73,18 +72,18 @@ def get_download_options(formats: list,
     options = []
 
     for f in min_bitrate_formats:
-        file_approx = f.get('filesize_approx', 0)
+        file_approx = f['filesize_approx']
 
         file_approx = bytes_to_megabytes(file_approx)
 
-        resolution = f'{f.get('height', None)}p'
+        resolution = f'{f['height']}p'
 
         options.append(
             {
                 'name': resolution,
                 'size': f'{'_' if file_approx == 0 else file_approx} Mb',
                 'url': f'{base_url}download?format_id=\
-                    {f.get('format_id', 137)}&fullname={fullname}\
+                    {f['format_id']}&fullname={fullname}\
                         &resolution={resolution}&url={video_url}',
             }
         )
