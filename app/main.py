@@ -85,7 +85,7 @@ def download_video(request: Request,
     return JSONResponse({'file_path': file_path}, status_code=200)
 
 
-@app.delete('/delete-file/', response_class=Response)
+@app.delete('/delete-file', response_class=Response)
 def delete_static_file(request: Request, file_path: str):
 
     try:
@@ -94,7 +94,7 @@ def delete_static_file(request: Request, file_path: str):
         return Response(status_code=status.HTTP_204_NO_CONTENT)
     except Exception as e:
         print(e)
-        return Response(status_code=status.HTTP_404_NOT_FOUND)
+        return Response(status_code=status.HTTP_409_CONFLICT)
 
 
 @app.get('/error_invalid_url')

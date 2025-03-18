@@ -126,7 +126,7 @@
                 hiddenLoader(name);
 
                 setTimeout(async () => {
-                    await fetch(`/detele-file?file_path=${data.file_path}`,
+                    await fetch(`/delete-file?file_path=${data.file_path}`,
                         {
                             method: 'DELETE'
                         });

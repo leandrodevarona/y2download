@@ -43,6 +43,8 @@ def get_video_info(url: str):
 
         fullname = clean_file_name(fullname)
 
+        print('el fullname...',fullname)
+
         thumbnail = f'https://img.youtube.com/vi/{video_id}/maxresdefault.jpg'
 
         # Acceder a la lista de formatos
@@ -109,6 +111,8 @@ def download(url, format_id: int, fullname: str, resolution: str):
             __file__), 'ffmpeg', 'bin', 'ffmpeg.exe')
 
         format_str = get_format_str(format_id)
+
+        print('el fullname...', fullname)
 
         ydl_opts = {
             "format": format_str,
