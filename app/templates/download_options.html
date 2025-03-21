@@ -126,14 +126,11 @@
                 hiddenLoader(name);
 
                 setTimeout(async () => {
-                    await fetch(`/delete-file?file_path=${data.file_path}`,
-                        {
-                            method: 'DELETE'
-                        });
+                    await fetch(`/delete-file?file_path=${data.file_path}`,{method: 'DELETE'});
                 }, 500)
 
             } catch (error) {
-                console.error('Hubo un problema con la descarga:', error);
+                console.error('There was a problem downloading: ', error);
             }
 
         }
