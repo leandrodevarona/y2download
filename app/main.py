@@ -13,6 +13,7 @@ from app.services.yt_dlp import (download,
                                  get_download_options,
                                  delete_file)
 from fastapi.middleware.cors import CORSMiddleware
+from app.utils.strings import remove_trailing_spaces
 
 app = FastAPI()
 
@@ -77,6 +78,9 @@ def download_video(request: Request,
                    resolution: str,
                    is_audio: bool = False):
 
+    #Removing all whitespace characters from the right end of the string
+    fullname = remove_trailing_spaces(fullname)
+
     file_path = download(url, format_id, fullname, resolution)
 
     if file_path == 'error_invalid_url':
@@ -100,5 +104,4 @@ def delete_static_file(request: Request, file_path: str):
 @app.get('/error_invalid_url')
 def error_invalid_url(request: Request):
     return templates.TemplateResponse(
-        request=request, name="error_invalid_url.html"
-    )
+        request=request, name="error_invalid_url.html")

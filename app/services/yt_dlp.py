@@ -3,7 +3,6 @@ import yt_dlp as yt
 from app.utils.data import bytes_to_megabytes
 from app.utils.strings import clean_file_name
 
-
 def validate(url):
     try:
         ydl_opts = {
@@ -16,7 +15,6 @@ def validate(url):
 
             if info_dict["extractor"] == 'youtube':
                 return True
-
         return False
 
     except Exception as e:
@@ -42,8 +40,6 @@ def get_video_info(url: str):
         fullname = info_dict.get("fulltitle", video_id)
 
         fullname = clean_file_name(fullname)
-
-        print('el fullname...',fullname)
 
         thumbnail = f'https://img.youtube.com/vi/{video_id}/maxresdefault.jpg'
 
@@ -105,14 +101,13 @@ def get_format_str(format_id: str):
 
 
 def download(url, format_id: int, fullname: str, resolution: str):
+
     try:
 
         ffmpeg_path = os.path.join(os.path.dirname(
             __file__), 'ffmpeg', 'bin', 'ffmpeg.exe')
 
         format_str = get_format_str(format_id)
-
-        print('el fullname...', fullname)
 
         ydl_opts = {
             "format": format_str,
@@ -136,6 +131,7 @@ def download(url, format_id: int, fullname: str, resolution: str):
             file_path = f'static/{fullname}({resolution}).{ext}'
 
             return file_path
+        
     except Exception as e:
         print(e)
         return 'error_invalid_url'
