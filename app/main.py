@@ -2,16 +2,20 @@ from fastapi import FastAPI, Request
 from fastapi.responses import (HTMLResponse,
                                RedirectResponse,
                                JSONResponse,
-                               Response)
+                               Response,
+                               StreamingResponse)
 from fastapi import status
 from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
 
 from app.services.yt_dlp import (download,
+                                 download_audio, #((CAMBIO))
                                  validate,
                                  get_video_info,
                                  get_download_options,
-                                 delete_file)
+                                 get_download_audio_options,
+                                 delete_file,
+                                 progress_generator)
 from fastapi.middleware.cors import CORSMiddleware
 from app.utils.strings import remove_trailing_spaces
 
@@ -27,17 +31,15 @@ app.add_middleware(
     allow_headers=["*"],  # Permite todos los encabezados
 )
 
-app.mount("/static", StaticFiles(directory="static"), name="static")
+app.mount("/static", StaticFiles(directory="static"), name = 'static')
 
 templates = Jinja2Templates(directory="app/templates")
-
 
 @app.get('/', response_class=HTMLResponse)
 def home_view(request: Request):
     return templates.TemplateResponse(
-        request=request, name="home.html"
+        request=request, name = 'home.html'
     )
-
 
 @app.get('/download-options/', response_class=HTMLResponse)
 async def download_options(request: Request, url: str):
@@ -49,22 +51,20 @@ async def download_options(request: Request, url: str):
 
         fullname, formats, thumbnail = get_video_info(url)
 
+        fullname = remove_trailing_spaces(fullname)
+
         options = get_download_options(
             formats, url, request.base_url, fullname)
-
+        
+        audio_options = get_download_audio_options(formats, url, request.base_url, fullname)
+        
         return templates.TemplateResponse(
-            request=request,
-            name="download_options.html",
+            request = request,
+            name = 'download_options.html',
             context={
                 'fullname': fullname,
                 'video_options': options,
-                'audio_option':
-                    {
-                        'name': 'Audio (.m4a)',
-                        'size': '3Mb',
-                        'url': f'{request.base_url}\
-                            download?is_audio=true&url={url}'
-                    },
+                'audio_options': audio_options, #(CAMBIO)
                 'thumbnail': thumbnail
             }
         )
@@ -74,9 +74,10 @@ async def download_options(request: Request, url: str):
 def download_video(request: Request,
                    url: str,
                    fullname: str,
-                   format_id: int,
-                   resolution: str,
-                   is_audio: bool = False):
+                   format_id: str,
+                   resolution: str):
+    
+    print(f'request.base_url======== {request.base_url}') #(CAMBIO)
 
     #Removing all whitespace characters from the right end of the string
     fullname = remove_trailing_spaces(fullname)
@@ -89,7 +90,42 @@ def download_video(request: Request,
     return JSONResponse({'file_path': file_path}, status_code=200)
 
 
-@app.delete('/delete-file', response_class=Response)
+
+""""
+#=================================================================(CAMBIO)
+# Example usage
+#download_audio(
+#    'https://www.youtube.com/watch?v=example_video_id',
+#    'bestaudio',
+#    '/path/to/your/file.mp3',
+#    '4'
+#)
+#================================================================="""
+
+
+
+
+@app.get('/download_audio/', response_class=RedirectResponse | JSONResponse)
+def download_audio_file(request: Request,
+                   url: str,
+                   fullname: str,
+                   format_id: int,
+                   code: int):
+    
+    print(f'request.base_url======== {request.base_url}') #(CAMBIO)
+
+    #Removing all whitespace characters from the right end of the string
+    fullname = remove_trailing_spaces(fullname)
+
+    file_path = download_audio(url, format_id, fullname, code)
+
+    if file_path == 'error_invalid_url':
+        return RedirectResponse(f'{request.base_url}{file_path}')
+
+    return JSONResponse({'file_path': file_path}, status_code=200)
+
+
+@app.delete('/delete-file/', response_class=Response)
 def delete_static_file(request: Request, file_path: str):
 
     try:
@@ -100,6 +136,9 @@ def delete_static_file(request: Request, file_path: str):
         print(e)
         return Response(status_code=status.HTTP_409_CONFLICT)
 
+@app.get("/get-progress")
+async def get_progress():
+    return StreamingResponse(progress_generator(), media_type="text/event-stream")
 
 @app.get('/error_invalid_url')
 def error_invalid_url(request: Request):

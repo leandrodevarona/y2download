@@ -9,52 +9,59 @@
 </head>
 
 <body>
-    <div class="container">
-        <section>
-            <img class="container_img" src="{{thumbnail}}" alt="Video preview">
-            <span>{{fullname}}</span>
-        </section>
-        <section>
-            <div class="tabs">
-                <div class="tab active" onclick="showTab('videoTab')">Video</div>
-                <div class="tab" onclick="showTab('audioTab')">Audio</div>
-            </div>
+    <main>
+        <progress id="progressInput" max="100" value="0" hidden></progress>
+        <div class="container">
+            <section>
+                <img class="container_img" src="{{thumbnail}}" alt="Video preview">
+                <span>{{fullname}}</span>
+            </section>
+            <section>
+                <div class="tabs">
+                    <div class="tab active" onclick="showTab('videoTab')">Video</div>
+                    <div class="tab" onclick="showTab('audioTab')">Audio</div>
+                </div>
 
-            <!-- Video options -->
-            <div id="videoTab" class="tabContent">
-                <table class="options_table">
-                    {% for option in video_options %}
-                    <tr>
-                        <th>{{option.name}}</th>
-                        <th>{{option.size}}</th>
-                        <th>
-                            <button id="{{option.name}}"
-                                onclick="initDownload('{{ option.url }}', '{{ option.name }}');">
-                                <span id="span_{{option.name}}">Descargar</span>
-                                <div id="loader_{{option.name}}" class="dots_loader" hidden></div>
-                            </button>
-                        </th>
-                    </tr>
-                    {% endfor %}
-                </table>
-            </div>
+                <!-- Video options -->
+                <div id="videoTab" class="tabContent">
+                    <table class="options_table">
+                        {% for option in video_options %}
+                        <tr>
+                            <th>{{option.name}}</th>
+                            <th>{{option.size}}</th>
+                            <th>
+                                <button id="{{option.name}}"
+                                    onclick="initDownload('{{ option.url }}', '{{ option.name }}')">
+                                    <span id="span_{{option.name}}">Descargar</span>
+                                    <div id="loader_{{option.name}}" class="dots_loader" hidden></div>
+                                </button>
+                            </th>
+                        </tr>
+                        {% endfor %}
+                    </table>
+                </div>
 
-            <!-- Audio options -->
-            <div id="audioTab" class="tabContent hidden">
-                <table class="options_table">
-                    <tr>
-                        <th>{{audio_option.name}}</th>
-                        <th>{{audio_option.size}}</th>
-                        <th>
-                            <a href="{{audio_option.url}}">
-                                Descargar
-                            </a>
-                        </th>
-                    </tr>
-                </table>
-            </div>
-        </section>
-    </div>
+                <!-- Audio options -->
+                <div id="audioTab" class="tabContent hidden">
+                    <table class="options_table">
+                        {% for audio_option in audio_options %}
+                        <tr>
+                            <th>{{audio_option.name}}</th>
+                            <th>{{audio_option.size}}</th>
+                            <th>
+                                <button id="{{audio_option.name}}"
+                                    onclick="initDownload('{{ audio_option.url }}', '{{ audio_option.name }}')">
+                                    <span id="span_{{audio_option.name}}">Descargar</span>
+                                    <div id="loader_{{audio_option.name}}" class="dots_loader" hidden></div>
+                                </button>
+                            </th>
+                        </tr>
+                        {% endfor %}
+                    </table>
+                </div>
+            </section>
+        </div>
+    </main>
 
     <!-- Placeholder for Python function -->
     <script>
@@ -92,6 +99,21 @@
 
         }
 
+        function showProgress(value) {
+
+            const progressInput = document.getElementById('progressInput');
+            progressInput.hidden = false;
+            progressInput.value = value;
+
+        }
+
+        function hiddenProgress() {
+
+            const progressInput = document.getElementById('progressInput');
+            progressInput.hidden = true;
+
+        }
+
         function hiddenLoader(name) {
 
             const button = document.getElementById(name);
@@ -109,10 +131,23 @@
             showLoader(name);
 
             try {
+                const source = new EventSource("http://127.0.0.1:8000/get-progress");
+
+                source.addEventListener('progressUpdate', function (event) {
+                    const progress = JSON.parse(event.data);
+                    console.log('ProgressUpdate', progress);
+                    showProgress(progress);
+
+                    // if(progress == 100) {
+                    //     source.close();
+                    // }
+                });
+
                 let response = await fetch(url);
+
                 if (!response.ok) throw new Error('Error en la red');
 
-                const data = (await response.json())
+                const data = (await response.json());
 
                 const domain = window.location.origin;
 
@@ -126,7 +161,7 @@
                 hiddenLoader(name);
 
                 setTimeout(async () => {
-                    await fetch(`/delete-file?file_path=${data.file_path}`,{method: 'DELETE'});
+                    await fetch(`/delete-file?file_path=${data.file_path}`, { method: 'DELETE' });
                 }, 500)
 
             } catch (error) {

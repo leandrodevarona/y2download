@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta name="description" content="YouTube free downloader" />
+    <meta name="description" content="YouTube free online downloader application" />
     <meta name="robots" content="index, follow" />
     <title>YouTube Downloader</title>
     <link href="{{ url_for('static', path='/styles/home.css') }}" rel="stylesheet" />
@@ -57,10 +57,9 @@
 
             // 1. Crear el iframe  
             const iframe = document.createElement('iframe');
-
             const btnSubmit = document.getElementById('btn-submit');
 
-            // 2. Configurar atributos  
+            // 2. Configurar atributos 
             iframe.src = iframe_src; // Cambia esta URL por la que necesites  
             iframe.id = 'iframe_download_options'
             iframe.frameBorder = '0';
@@ -77,9 +76,10 @@
 
             }
 
-            // 3. Seleccionar el elemento padre  
+            // 3. Seleccionar el elemento padre 
             const elementoPadre = document.getElementById('download_options'); // Cambia 'miElemento' por el ID del elemento deseado  
             elementoPadre.style.display = 'flex'
+            
             // 4. Agregar el iframe al elemento padre  
             elementoPadre.appendChild(iframe);
 

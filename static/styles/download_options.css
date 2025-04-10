@@ -13,6 +13,11 @@
   }
 }
 
+#progressInput {
+  width: 100%;
+  min-width: 200px;
+}
+
 .container_img {
   width: 100%;
   height: auto;
