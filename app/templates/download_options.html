@@ -25,15 +25,16 @@
                 <!-- Video options -->
                 <div id="videoTab" class="tabContent">
                     <table class="options_table">
-                        {% for option in video_options %}
+                        {% for video_option in video_options %}
                         <tr>
-                            <th>{{option.name}}</th>
-                            <th>{{option.size}}</th>
+                            <th>{{video_option.format_id}}</th>
+                            <th>{{video_option.name}}</th>
+                            <th>{{video_option.size}}</th>
                             <th>
-                                <button id="{{option.name}}"
-                                    onclick="initDownload('{{ option.url }}', '{{ option.name }}')">
-                                    <span id="span_{{option.name}}">Descargar</span>
-                                    <div id="loader_{{option.name}}" class="dots_loader" hidden></div>
+                                <button id="{{video_option.format_id}}"
+                                    onclick="initDownload('{{video_option.url}}', '{{video_option.format_id}}')">
+                                    <span id="span_{{video_option.format_id}}">Download</span>
+                                    <div id="loader_{{video_option.format_id}}" class="dots_loader" hidden></div>
                                 </button>
                             </th>
                         </tr>
@@ -46,13 +47,14 @@
                     <table class="options_table">
                         {% for audio_option in audio_options %}
                         <tr>
+                            <th>{{audio_option.format_id}}</th>
                             <th>{{audio_option.name}}</th>
                             <th>{{audio_option.size}}</th>
                             <th>
-                                <button id="{{audio_option.name}}"
-                                    onclick="initDownload('{{ audio_option.url }}', '{{ audio_option.name }}')">
-                                    <span id="span_{{audio_option.name}}">Descargar</span>
-                                    <div id="loader_{{audio_option.name}}" class="dots_loader" hidden></div>
+                                <button id="{{audio_option.format_id}}"
+                                    onclick="initDownload('{{audio_option.url}}', '{{audio_option.format_id}}')">
+                                    <span id="span_{{audio_option.format_id}}">Download</span>
+                                    <div id="loader_{{audio_option.format_id}}" class="dots_loader" hidden></div>
                                 </button>
                             </th>
                         </tr>
@@ -66,7 +68,7 @@
     <!-- Placeholder for Python function -->
     <script>
         function analyze(url) {
-            window.location.href = `/download?url=${url}`
+            window.location.href = `/download_video?url=${url}` //(CAMBIO OJO)
         }
 
         function showTab(tabName) {
@@ -87,11 +89,11 @@
             }
         }
 
-        function showLoader(name) {
+        function showLoader(formatId) {
 
-            const button = document.getElementById(name);
-            const span = document.getElementById(`span_${name}`);
-            const loader = document.getElementById(`loader_${name}`)
+            const button = document.getElementById(formatId);
+            const span = document.getElementById(`span_${formatId}`);
+            const loader = document.getElementById(`loader_${formatId}`)
 
             button.disabled = true;
             span.hidden = true;
@@ -99,26 +101,27 @@
 
         }
 
-        function showProgress(value) {
+        function showProgress(value, buttonId) {
 
-            const progressInput = document.getElementById('progressInput');
-            progressInput.hidden = false;
-            progressInput.value = value;
+            fillProgress(buttonId, value)
 
         }
 
-        function hiddenProgress() {
+        function hiddeProgress(buttonId) {
 
-            const progressInput = document.getElementById('progressInput');
-            progressInput.hidden = true;
+            fillProgress(buttonId, 0)
+
+            const progressElem = document.getElementById(buttonId);
+            progressElem.style.background = 'yellowgreen';
+            progressElem.style.color = 'red';
 
         }
 
-        function hiddenLoader(name) {
+        function hiddenLoader(formatId) {
 
-            const button = document.getElementById(name);
-            const span = document.getElementById(`span_${name}`);
-            const loader = document.getElementById(`loader_${name}`)
+            const button = document.getElementById(formatId);
+            const span = document.getElementById(`span_${formatId}`);
+            const loader = document.getElementById(`loader_${formatId}`)
 
             button.disabled = false;
             span.hidden = false;
@@ -126,26 +129,29 @@
 
         }
 
-        async function initDownload(url, name) {
+        async function initDownload(url, formatId) {
+            console.log('url(initDownload)===== ', url);
+            console.log('\n\n');
+            console.log('formatId(initDownload)===== ', formatId);
+            console.log('\n\n');
+            showLoader(formatId);
 
-            showLoader(name);
+            const eventName = 'progressUpdate' + formatId;
+
+            const source = new EventSource(`http://127.0.0.1:8000/get-progress?event_name=${eventName}`);
 
             try {
-                const source = new EventSource("http://127.0.0.1:8000/get-progress");
-
-                source.addEventListener('progressUpdate', function (event) {
+                function eventProgress(event) {
                     const progress = JSON.parse(event.data);
-                    console.log('ProgressUpdate', progress);
-                    showProgress(progress);
+                    console.log('ProgressUpdate===== ', progress);
+                    showProgress(progress, formatId);
+                }
 
-                    // if(progress == 100) {
-                    //     source.close();
-                    // }
-                });
+                source.addEventListener(eventName, eventProgress);
 
                 let response = await fetch(url);
 
-                if (!response.ok) throw new Error('Error en la red');
+                if (!response.ok) throw new Error('Network error');
 
                 const data = (await response.json());
 
@@ -158,14 +164,38 @@
                 link.download = '';
                 link.click();
 
-                hiddenLoader(name);
+                hiddenLoader(formatId);
 
                 setTimeout(async () => {
                     await fetch(`/delete-file?file_path=${data.file_path}`, { method: 'DELETE' });
-                }, 500)
+                }, 250) // (CAMBIO 500)
 
             } catch (error) {
-                console.error('There was a problem downloading: ', error);
+                console.error('Problem downloading in initDownload===== ', error);
+            }
+
+            source.close();
+            source.removeEventListener(eventName, eventProgress)
+            hiddeProgress(formatId);
+        }
+
+        const slideColor = '#b4b9bc';
+        const rangeColor = 'red';
+
+        function fillProgress(progressId, progressValue) {
+            const progressElem = document.getElementById(progressId);
+            if (progressElem) {
+                const rangeDistance = 100;
+                const fromPosition = 0;
+                const toPosition = progressValue;
+                progressElem.style.background = `linear-gradient(
+                    to right,
+                    ${slideColor} 0%,
+                    ${slideColor} ${(fromPosition / rangeDistance) * 100}%,
+                    ${rangeColor} ${(fromPosition / rangeDistance) * 100}%,
+                    ${rangeColor} ${(toPosition / rangeDistance) * 100}%, 
+                    ${slideColor} ${(toPosition / rangeDistance) * 100}%, 
+                    ${slideColor} 100%)`;
             }
         }
 

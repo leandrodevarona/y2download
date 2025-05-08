@@ -1,14 +1,16 @@
 import os
 import yt_dlp as yt
 from app.utils.data import bytes_to_megabytes
-from app.utils.strings import clean_file_name
+from app.utils.strings import (clean_file_name, 
+                               keep_numbers_only, 
+                               filter_format_id) 
 from asyncio import sleep
 
 def validate(url):
     try:
         ydl_opts = {
             "format": "bestaudio/best",
-            'outtmpl': 'example' + '%(ext)s'
+            "outtmpl": 'example' + '%(ext)s'
         }
 
         with yt.YoutubeDL(ydl_opts) as ydl:
@@ -36,7 +38,7 @@ def get_video_info(url: str):
         info_dict = ydl.extract_info(url, download=False)
 
         video_id = info_dict["display_id"]
-        print((f'video_id============== {video_id}')) #(CAMBIO)
+        print((f'video_id============== {video_id}'))
 
         fullname = info_dict.get("fulltitle", video_id)
         print((f'fullname============== {fullname}, ***')) #(CAMBIO)
@@ -51,7 +53,7 @@ def get_video_info(url: str):
         return [fullname, formats, thumbnail]
 
 
-def get_download_options(formats: list,
+def get_download_video_options(formats: list,
                          video_url: str,
                          base_url: str,
                          fullname: str):
@@ -84,17 +86,29 @@ def get_download_options(formats: list,
 
         file_approx = bytes_to_megabytes(file_approx)
 
+        format_id = f.get('format_id', 137)
+
+        format_id = keep_numbers_only(format_id) #(CAMBIO MEJORA)
+
         resolution = f'{f.get("height", None)}p'
 
-        options.append(
-            {
-                'name': resolution,
-                'size': f'{"unknow" if file_approx == 0 else file_approx} Mb',
-                'url': f'{base_url}download?format_id=\
-                    {f.get("format_id", 137)}&fullname={fullname}\
-                        &resolution={resolution}&url={video_url}'
-            }
-        )
+        if file_approx > 0: #(CAMBIO file_approx NO PUEDE SER CERO)
+
+            options.append(
+                {
+                    'name': resolution,
+                    'format_id': format_id,
+                    'file_approx': file_approx,
+                    'size': f'{"Unk" if file_approx == 0 else file_approx} Mb',
+                    'url': f'{base_url}download_video?format_id={format_id}&fullname={fullname}&resolution={resolution}&url={video_url}'
+                }
+            )
+
+    #(CAMBIO ELIMINA LOS format_id DUPLICADOS)
+    options = filter_format_id(options)
+
+    #(CAMBIO MEJOR ORDENAR POR file_approx QUE POR format_id)
+    options.sort(key=lambda format: format ['file_approx'], reverse = True)
 
     return options
 
@@ -111,30 +125,38 @@ def get_download_audio_options(formats: list,
 
     for f in available_audio:
         
-        file_approx = f.get("filesize", 0)
+        file_approx = f.get('filesize', 0)
 
         file_approx = bytes_to_megabytes(file_approx)
 
-        format_id = f.get("format_id", 137)
+        format_id = f.get('format_id', 233)
 
-        code = f.get('quality', 0) 
+        format_id = keep_numbers_only(format_id) #(CAMBIO MEJORA)
 
-        format_id = f.get('format_id')
+        code = f.get('quality', 0)
 
-        options.append(
-            {
-                'name': f"mp3(ID:{format_id})",
-                'size': f'{"unknow" if file_approx == 0 else file_approx} Mb',
-                'url': f'{base_url}download_audio?format_id=\
-                    {format_id}&fullname={fullname}\
-                        &url={audio_url}&code={code}'
-            }
-        )
+        if file_approx > 0: #(CAMBIO file_approx NO PUEDE SER CERO)
+
+            options.append(
+                {
+                    'name': f'mp3', #(CAMBIO TEMPORAL)
+                    'format_id': format_id,
+                    'file_approx': file_approx,
+                    'size': f'{"Unk" if file_approx == 0 else file_approx} Mb',
+                    'url': f'{base_url}download_audio?format_id={format_id}&fullname={fullname}&url={audio_url}&code={code}'
+                }
+            )
+
+    #(CAMBIO ELIMINA LOS format_id DUPLICADOS)
+    options = filter_format_id(options)
+
+    #(CAMBIO MEJOR ORDENAR POR file_approx QUE POR format_id)
+    options.sort(key=lambda format: format['file_approx'], reverse = True)
 
     return options
 
 
-def get_format_str(format_id: str):
+def get_video_format_str(format_id: str):
 
     format_str = f"{format_id}+ba[ext=m4a]/{format_id}\
         +ba/bv*[ext=mp4]+ba[ext=m4a]/b[ext=mp4]/bv*+ba/b"
@@ -149,33 +171,38 @@ def get_audio_format_str(format_id: str):
 
 dl_progress = 0
 
-async def progress_generator():
+async def progress_generator(event_name: str):
     while dl_progress <= 100:
-        yield f"event: progressUpdate\ndata: {dl_progress}\n\n"
-        await sleep(1)
+        yield f"event: {event_name}\ndata: {dl_progress}\n\n"
+        await sleep(0.5)
 
 def dl_progress_hook(d):
     global dl_progress
-    if d["status"] == "downloading" and d["total_bytes"] > 0:
-        dl_progress = int(d["downloaded_bytes"] / d["total_bytes"] * 100)
+    
+    print('El status...', d["status"])
+    #if d["status"] == "downloading" and d["total_bytes"] > 0:
+    if d["status"] == "downloading":
+        #dl_progress = int(d["downloaded_bytes"] / d["total_bytes"] * 100)
+        dl_progress = round(d["_percent"], 1) # (CAMBIO round 2)
     else:
         dl_progress = -1
 
-def download(url: str, format_id: str, fullname: str, resolution: str):
+def download_video(url: str, format_id: str, fullname: str, resolution: str):
 
     try:
 
         ffmpeg_path = os.path.join(os.path.dirname(
             __file__), 'ffmpeg', 'bin', 'ffmpeg.exe')
 
-        format_str = get_format_str(format_id)
+        format_str = get_video_format_str(format_id)
 
         ydl_opts = {
-            "format": format_str,
-            "final_ext": "mp4",
-            "ffmpeg_location": ffmpeg_path,
+            'format': format_str,               # Use the specified format ID
+            'final_ext': 'mp4',                 # (CAMBIO INVENTO)
+            'ffmpeg_location': ffmpeg_path,
+            # Save file with the desired fullname in \static\
             'outtmpl': f'static/{fullname}({resolution}).' + '%(ext)s',
-            "progress_hooks": [dl_progress_hook],
+            'progress_hooks': [dl_progress_hook] # Invoques fun 'dl_progress_hook'
         }
 
         with yt.YoutubeDL(ydl_opts) as ydl:
@@ -195,8 +222,9 @@ def download(url: str, format_id: str, fullname: str, resolution: str):
             return file_path
         
     except Exception as e:
-        print(f"An error occurred: {e}")
+        print(f'An error occurred===== : {e}')
         #return 'error_invalid_url' (CAMBIO) Duplicado ya se validó
+
 
 def download_audio(url: str, format_id: int, fullname: str, code: int): #(CAMBIO)
     """
@@ -213,17 +241,19 @@ def download_audio(url: str, format_id: int, fullname: str, code: int): #(CAMBIO
     """
     format_str = get_audio_format_str(format_id)
 
-    options = {
+    ydl_opts = {
         'format': format_str,          # Use the specified format ID
-        'extractaudio': True,         # Extract audio only
-        'audioquality': code,  # Set audio quality
-        'audioformat': 'mp3',         # Save audio in MP3 format
-        # Save file with the desired fullname in \static
-        'outtmpl': f'static/{fullname}({code}).' + '%(ext)s'
+        'extractaudio': True,          # Extract audio only
+        'audioquality': code,          # Set audio quality
+        'audioformat': 'mp3',          # Save audio in MP3 format
+        'final_ext': 'mp3',            # (CAMBIO INVENTO)
+        # Save file with the desired fullname in \static\
+        'outtmpl': f'static/{fullname}({code}).' + '%(ext)s',
+        'progress_hooks': [dl_progress_hook] # Invoques fun 'dl_progress_hook'
     }
 
     try:
-        with yt.YoutubeDL(options) as ydl:
+        with yt.YoutubeDL(ydl_opts) as ydl:
             info_dict = ydl.extract_info(url, download=False)
 
             is_valid_url = info_dict["extractor"] == 'youtube'
@@ -238,14 +268,13 @@ def download_audio(url: str, format_id: int, fullname: str, code: int): #(CAMBIO
             file_path = f'static/{fullname}({code}).{ext}'
 
             return file_path
+        
     except Exception as e:
-        print(f"An error occurred: {e}")
-
-
+        print(f'An error occurred===== : {e}')
 
 
 def delete_file(file_path: str):
     if os.path.exists(file_path):
         os.unlink(file_path)
     else:
-        raise Exception({'details': 'File not found'})
+        raise Exception({'details===== ': 'File not found'})

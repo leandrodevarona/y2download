@@ -46,6 +46,18 @@ h1 {
   color: #333; /* Dark gray color for title */
 }
 
+.blink {
+  color: red;
+  font-weight: bold;
+  animation: blink-animation 1s infinite;
+}
+
+@keyframes blink-animation {
+  50% {
+      opacity: 0;
+  }
+}
+
 #Url_Path {
   max-width: 600px;
   width: 100%;
