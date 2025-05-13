@@ -20,6 +20,7 @@ from app.utils.strings import (remove_trailing_spaces,
                               remove_leading_spaces)
 import time
 
+
 app = FastAPI()
 
 # Configuración de CORS
@@ -148,10 +149,10 @@ def delete_static_file(request: Request, file_path: str): #(CAMBIO INTENTAR BORR
     except FileNotFoundError:
         print("Error: The file was not found.")
     except Exception as e:
-        print(f'An unexpected error occurred {e}')
+        print(f'An unexpected error occurred===== {e}')
         #print("Let's wait a while and try again...")
         #time.sleep(0.5)  # Pauses execution for 0.5 seconds
-        time.sleep(5)  # Pauses execution for 5 seconds
+        #time.sleep(5)  # Pauses execution for 5 seconds
         #delete_static_file(request, file_path)
         return Response(status_code=status.HTTP_409_CONFLICT)
 
