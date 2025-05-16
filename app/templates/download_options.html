@@ -130,10 +130,6 @@
         }
 
         async function initDownload(url, formatId) {
-            console.log('url(initDownload)===== ', url);
-            console.log('\n\n');
-            console.log('formatId(initDownload)===== ', formatId);
-            console.log('\n\n');
             showLoader(formatId);
 
             const eventName = 'progressUpdate' + formatId;
@@ -143,7 +139,7 @@
             try {
                 function eventProgress(event) {
                     const progress = JSON.parse(event.data);
-                    console.log('ProgressUpdate===== ', progress);
+                    console.log('ProgressUpdate= ', progress);
                     showProgress(progress, formatId);
                 }
 
@@ -158,6 +154,7 @@
                 const domain = window.location.origin;
 
                 const file_path = domain + '/' + data.file_path;
+                console.log('file_path= ', file_path);
 
                 const link = document.createElement('a');
                 link.href = file_path;
@@ -167,8 +164,8 @@
                 hiddenLoader(formatId);
 
                 setTimeout(async () => {
-                    await fetch(`/delete-file?file_path=${data.file_path}`, { method: 'DELETE' });
-                }, 250) // (CAMBIO 500)
+                    await fetch(`/delete-file?file_path=${data.file_path}`, {method: 'DELETE'});
+                }, 500) // (CAMBIO 500)
 
             } catch (error) {
                 console.error('Problem downloading in initDownload===== ', error);
@@ -179,7 +176,7 @@
             hiddeProgress(formatId);
         }
 
-        const slideColor = '#b4b9bc';
+        const slideColor = 'yellowgreen'
         const rangeColor = 'red';
 
         function fillProgress(progressId, progressValue) {
