@@ -163,9 +163,17 @@
 
                 hiddenLoader(formatId);
 
-                setTimeout(async () => {
+                /*setTimeout(async () => {
                     await fetch(`/delete-file?file_path=${data.file_path}`, {method: 'DELETE'});
-                }, 500) // (CAMBIO 500)
+                }, 500) // (CAMBIO 500)*/
+
+                setTimeout(async () => {
+                    try {
+                        await fetch(`/delete-file?file_path=${data.file_path}`, { method: 'DELETE' });
+                    } catch (e) {
+                        console.error("Error deleting file:", e);
+                    }
+                }, 500); // Delay for the browser to rename the file
 
             } catch (error) {
                 console.error('Problem downloading in initDownload===== ', error);

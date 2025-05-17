@@ -1,3 +1,5 @@
+import os
+import time
 from fastapi import (FastAPI, Request, status)
 from fastapi.responses import (HTMLResponse,
                                RedirectResponse,
@@ -13,12 +15,11 @@ from app.services.yt_dlp import (download_video,
                                  get_video_info,
                                  get_download_video_options,
                                  get_download_audio_options,
-                                 delete_file,
-                                 progress_generator)
+                                 progress_generator,
+                                 unlock_file)
 from fastapi.middleware.cors import CORSMiddleware
 from app.utils.strings import (remove_trailing_spaces,
                               remove_leading_spaces)
-import time
 
 
 app = FastAPI()
@@ -102,17 +103,6 @@ def download_video_file(request: Request,
     return JSONResponse({'file_path': file_path}, status_code=200)
 
 
-"""=================================================================(CAMBIO)
- Example usage
-download_audio(
-    'https://www.youtube.com/watch?v=example_video_id',
-    'bestaudio',
-    '/path/to/your/file.mp3',
-    '4'
-)
-================================================================="""
-
-
 @app.get('/download_audio/', response_class=RedirectResponse | JSONResponse)
 def download_audio_file(request: Request,
                    url: str,
@@ -139,22 +129,96 @@ def download_audio_file(request: Request,
 
     return JSONResponse({'file_path': file_path}, status_code=200)
 
+"""
+#from flask import Flask, request, jsonify
 
-@app.delete('/delete-file/', response_class=Response)
+#app = Flask(__name__)
+
+@app.route('/delete-file', methods=["DELETE"])
+#def delete_file():
+def delete_file(request: Request, file_path: str):
+    #file_path = request.args.get("file_path")
+    if not file_path:
+        #return jsonify({"error": "File path is required"}), 400
+        return Response(status_code=status.HTTP_400_BAD_REQUEST)
+    
+    max_retries = 10
+    wait_time = 1
+
+    for _ in range(max_retries):
+        try:
+            os.remove(file_path)
+            #return jsonify({"message": f"File '{file_path}' deleted successfully"}), 200
+            return Response(status_code=status.HTTP_200_OK)
+        except PermissionError:
+            time.sleep(wait_time)
+        except FileNotFoundError:
+            #return jsonify({"error": "File not found"}), 404
+            return Response(status_code=status.HTTP_404_NOT_FOUND)
+    #return jsonify({"error": "File is in use and could not be deleted"}), 423
+    return Response(status_code=status.HTTP_423_LOCKED)
+"""    
+
+#from fastapi import FastAPI, HTTPException
+#import os
+#import time
+
+#app = FastAPI()
+class ResourceLockedError(Exception):
+    pass
+class UnknownError(Exception):
+    pass
+@app.delete('/delete-file', response_class=Response) #(CANBIO POR FIN SOLUCION AL METODO delete)
+async def delete_file(request: Request, file_path: str):
+    # Deletes a file, waiting if it's being used by another process.
+    max_retries = 10  # Number of times to check if the file is free
+    wait_time = 1  # Seconds to wait between retries
+
+    for lap in range(max_retries):
+        try:
+            os.remove(file_path)
+            print(f"File '{file_path}' deleted successfully\n")
+            return Response(status_code=status.HTTP_200_OK)
+        except PermissionError:
+            print(f"Waiting for '{file_path}' to be unlocked. Lap {lap}\n")
+            unlock_file(file_path)
+            time.sleep(wait_time)  # Wait and retry
+        except FileNotFoundError:
+            #raise HTTPException(status_code=404, detail="File not found")
+            print("File not found. Could be already removed\n")
+            return Response(status_code=status.HTTP_404_NOT_FOUND)
+        except ResourceLockedError as e:
+            print("The resource is locked and cannot be accessed {e}\n")
+            return Response(status_code=status.HTTP_423_LOCKED)
+    
+    raise UnknownError(status_code=409, detail="Conflict: File could not be deleted")
+
+"""    MUY INTEREANTE! 
+from http import HTTPStatus
+
+print(HTTPStatus.LOCKED)  # Output: HTTPStatus.LOCKED
+print(HTTPStatus.LOCKED.value)  # Output: 423
+print(HTTPStatus.LOCKED.phrase)  # Output: 'Locked'
+print(HTTPStatus.LOCKED.description)  # Output: 'The resource is locked.'
+"""
+
+""""
+@app.delete('/delete-file', response_class=Response)
 def delete_static_file(request: Request, file_path: str): #(CAMBIO INTENTAR BORRAR EL DICHOSO ARCHIVO)
 
     try:
         delete_file(file_path)
         return Response(status_code=status.HTTP_204_NO_CONTENT)
     except FileNotFoundError:
-        print("Error: The file was not found.")
+        print('File was already deleted.')
+        return Response(status_code=status.HTTP_204_NO_CONTENT)
     except Exception as e:
-        print(f'An unexpected error occurred===== {e}')
-        #print("Let's wait a while and try again...")
-        #time.sleep(0.5)  # Pauses execution for 0.5 seconds
-        #time.sleep(5)  # Pauses execution for 5 seconds
-        #delete_static_file(request, file_path)
-        return Response(status_code=status.HTTP_409_CONFLICT)
+        print(f'An unexpected error occurred= {e}')
+        if(status == status.HTTP_409_CONFLICT):
+            time.sleep(0.5)  #(CAMBIO) Pauses execution for 0.5 seconds
+            delete_static_file(request, file_path) #(CAMBIO) Nested call
+        return Response(status_code=status.HTTP_204_NO_CONTENT)
+"""        
 
 @app.get('/get-progress')
 async def get_progress(event_name: str):
