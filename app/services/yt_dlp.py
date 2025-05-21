@@ -174,13 +174,13 @@ def download_video(url: str, format_id: str, fullname: str, resolution: str):
 
         ffmpeg_path = os.path.join(os.path.dirname(
             __file__), 'ffmpeg', 'bin', 'ffmpeg.exe')
-
+        
         ydl_opts = {
-            'format': format_id,               # Use the specified format ID
+            'format': format_id,                  # Use the specified format ID
             'ffmpeg_location': ffmpeg_path,
             # Save file with the desired fullname in \static\
             'outtmpl': f'static/{fullname}({resolution}).' + '%(ext)s',
-            'progress_hooks': [dl_progress_hook] # Invoques fun 'dl_progress_hook'
+            'progress_hooks': [dl_progress_hook], # Invoques fun 'dl_progress_hook'
         }
 
         with yt.YoutubeDL(ydl_opts) as ydl:
@@ -206,11 +206,11 @@ def download_video(url: str, format_id: str, fullname: str, resolution: str):
 def download_audio(url: str, format_id: str, fullname: str, code: str): #(CAMBIO)
 
     ydl_opts = {
-        'format': format_id,            # Use the specified format ID
-        'extractaudio': True,           # Extract audio only
+        'format': format_id,                  # Use the specified format ID
+        'extractaudio': True,                 # Extract audio only
         # Save file with the desired fullname in \static\
         'outtmpl': f'static/{fullname}(Qty{code}).' + '%(ext)s',
-        'progress_hooks': [dl_progress_hook] # Invoques fun 'dl_progress_hook'
+        'progress_hooks': [dl_progress_hook], # Invoques fun 'dl_progress_hook'
     }
 
     try:
@@ -233,21 +233,72 @@ def download_audio(url: str, format_id: str, fullname: str, code: str): #(CAMBIO
     except Exception as e:
         print(f'Download error= : {e}')
 
-dl_progress = 0
+dl_progress = {}  # Global dictionary to store progress for each button/event
 
+async def progress_generator(event_name: str):
+    if event_name not in dl_progress:
+            dl_progress[event_name] = 0  # Initialize progress
+
+    while dl_progress.get(event_name, 0) <= 100:
+        yield f"event: {event_name}\ndata: {dl_progress.get(event_name, 0)}\n\n"
+        await sleep(1.0)      
+
+def dl_progress_hook(d):
+    info_dict = d.get("info_dict")  
+
+    if not info_dict:
+        return
+    
+    format_id =  info_dict.get('format_id')
+    event_name = 'progressUpdate_' + format_id # Unique key per download event
+
+    if not format_id:
+        return
+    
+    if d["status"] == "downloading":
+        dl_progress[event_name] = round(d["_percent"], 1)
+    else:
+        dl_progress[event_name] = 100  # Mark as complete
+
+""" Unnecessary funs.
+def handle_download(event_name):
+    if event_name not in dl_progress:
+        dl_progress[event_name] = 0  # Initialize progress
+
+    #while dl_progress[event_name] < 100:  # Simulating download progress
+        #dl_progress[event_name] += 10  # Increment progress (Adjust based on actual logic)
+    update_ui(event_name, dl_progress[event_name])  # Update UI accordingly
+
+def update_ui(event_name, progress):
+    # Here you’d send the updated progress to the frontend
+    #dl_progress_hook()
+    print(f"Download progress for {event_name}: {progress}%")
+"""
+
+def delete_progress(event_name: str):
+    try:
+        del dl_progress[event_name] # Removes item from dict when download ends
+    except:
+        print(f'Progress delete error= ', { event_name })
+
+"""ESTA ES LA MIA
+dl_progress = 0
 async def progress_generator(event_name: str):
     while dl_progress <= 100:
         yield f"event: {event_name}\ndata: {dl_progress}\n\n"
         await sleep(1.0)
+"""
 
-def dl_progress_hook(d):
+"""ESTA ES LA MIA
+    def dl_progress_hook(d):
     global dl_progress
-    
-    print('El status...', d["status"])
+
+    #print('Status...', d["status"])
     if d["status"] == "downloading":
         dl_progress = round(d["_percent"], 1)
     else:
         dl_progress = 0
+"""        
 
 """
 def delete_file(file_path: str):

@@ -16,10 +16,12 @@ from app.services.yt_dlp import (download_video,
                                  get_download_video_options,
                                  get_download_audio_options,
                                  progress_generator,
+                                 delete_progress,
                                  unlock_file)
 from fastapi.middleware.cors import CORSMiddleware
 from app.utils.strings import (remove_trailing_spaces,
                               remove_leading_spaces)
+from asyncio import sleep
 
 
 app = FastAPI()
@@ -129,50 +131,17 @@ def download_audio_file(request: Request,
 
     return JSONResponse({'file_path': file_path}, status_code=200)
 
-"""
-#from flask import Flask, request, jsonify
-
-#app = Flask(__name__)
-
-@app.route('/delete-file', methods=["DELETE"])
-#def delete_file():
-def delete_file(request: Request, file_path: str):
-    #file_path = request.args.get("file_path")
-    if not file_path:
-        #return jsonify({"error": "File path is required"}), 400
-        return Response(status_code=status.HTTP_400_BAD_REQUEST)
-    
-    max_retries = 10
-    wait_time = 1
-
-    for _ in range(max_retries):
-        try:
-            os.remove(file_path)
-            #return jsonify({"message": f"File '{file_path}' deleted successfully"}), 200
-            return Response(status_code=status.HTTP_200_OK)
-        except PermissionError:
-            time.sleep(wait_time)
-        except FileNotFoundError:
-            #return jsonify({"error": "File not found"}), 404
-            return Response(status_code=status.HTTP_404_NOT_FOUND)
-    #return jsonify({"error": "File is in use and could not be deleted"}), 423
-    return Response(status_code=status.HTTP_423_LOCKED)
-"""    
-
-#from fastapi import FastAPI, HTTPException
-#import os
-#import time
-
-#app = FastAPI()
 class ResourceLockedError(Exception):
     pass
 class UnknownError(Exception):
     pass
 @app.delete('/delete-file', response_class=Response) #(CANBIO POR FIN SOLUCION AL METODO delete)
-async def delete_file(request: Request, file_path: str):
+async def delete_file(request: Request, file_path: str, event_name: str):
     # Deletes a file, waiting if it's being used by another process.
     max_retries = 10  # Number of times to check if the file is free
     wait_time = 1  # Seconds to wait between retries
+
+    delete_progress(event_name)
 
     for lap in range(max_retries):
         try:
@@ -220,10 +189,21 @@ def delete_static_file(request: Request, file_path: str): #(CAMBIO INTENTAR BORR
         return Response(status_code=status.HTTP_204_NO_CONTENT)
 """        
 
+
+#from starlette.responses import StreamingResponse
+
+# Dictionary to track progress for each active download event
+#dl_progress = {}
+
 @app.get('/get-progress')
 async def get_progress(event_name: str):
     return StreamingResponse(progress_generator(event_name), media_type="text/event-stream")
 
+"""ESTA ES LA MIA
+@app.get('/get-progress')
+async def get_progress(event_name: str):
+    return StreamingResponse(progress_generator(event_name), media_type="text/event-stream")
+"""
 
 @app.get('/error_invalid_url')
 def error_invalid_url(request: Request):
