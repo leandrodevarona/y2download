@@ -26,14 +26,13 @@ from asyncio import sleep
 
 app = FastAPI()
 
-# Configuración de CORS
+# CORS configuration
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],  # Permite solicitudes desde cualquier origen
+    allow_origins=["*"],  # Allows requests from any source
     allow_credentials=True,
-    # Permite todos los métodos (GET, POST, PUT, DELETE, etc.)
-    allow_methods=["*"],
-    allow_headers=["*"],  # Permite todos los encabezados
+    allow_methods=["*"], # Allows all methods (GET, POST, PUT, DELETE, etc.)
+    allow_headers=["*"],  # Allows all headers
 )
 
 app.mount("/static", StaticFiles(directory="static"), name = 'static')
@@ -58,9 +57,9 @@ async def download_options(request: Request, url: str):
 
         fullname = remove_trailing_spaces(fullname)
 
-        video_options = [] #(CAMBIO)
+        video_options = [] 
 
-        audio_options = [] #(CAMBIO)
+        audio_options = [] 
 
         video_options = get_download_video_options(formats, url, request.base_url, fullname)
         
@@ -72,30 +71,22 @@ async def download_options(request: Request, url: str):
             context={
                 'fullname': fullname,
                 'video_options': video_options,
-                'audio_options': audio_options, #(CAMBIO)
+                'audio_options': audio_options,
                 'thumbnail': thumbnail
             }
         )
 
 
-@app.get('/download_video/', response_class=RedirectResponse | JSONResponse) #(CAMBIO OJO)
+@app.get('/download_video/', response_class=RedirectResponse | JSONResponse)
 def download_video_file(request: Request,
                    url: str,
                    fullname: str,
                    format_id: str,
                    resolution: str):
     
-    print(f'request.base_url===== {request.base_url}') #(CAMBIO)
-
-    print(f'fullname without casting in download_video_file===== {fullname}***') #(CAMBIO)
-    #Removing all whitespace characters from the right end of the string
     fullname = remove_trailing_spaces(fullname)
-    print(f'fullname in download_video_file===== {fullname}***') #(CAMBIO)
 
-    print(f'format_id without casting in download_video_file===== {format_id}') #(CAMBIO)
-    #Removing all whitespace characters from the left end of the string
     format_id = remove_leading_spaces(format_id)
-    print(f'format_id with casting in download_video_file===== {format_id}') #(CAMBIO)
 
     file_path = download_video(url, format_id, fullname, resolution)
 
@@ -112,17 +103,9 @@ def download_audio_file(request: Request,
                    format_id: str,
                    code: int):
     
-    print(f'request.base_url======== {request.base_url}') #(CAMBIO)
-
-    print(f'fullname without casting in download_audio_file======== {fullname}***') #(CAMBIO)
-    #Removing all whitespace characters from the right end of the string
     fullname = remove_trailing_spaces(fullname)
-    print(f'fullname with casting in download_audio_file======== {fullname}***') #(CAMBIO)
 
-    print(f'format_id without casting download_audio_file======== {format_id}') #(CAMBIO)
-    #Removing all whitespace characters from the left end of the string
     format_id = remove_leading_spaces(format_id)
-    print(f'format_id with casting in download_audio_file======== {format_id}') #(CAMBIO)
 
     file_path = download_audio(url, format_id, fullname, code)
 
@@ -130,6 +113,7 @@ def download_audio_file(request: Request,
         return RedirectResponse(f'{request.base_url}{file_path}')
 
     return JSONResponse({'file_path': file_path}, status_code=200)
+
 
 class ResourceLockedError(Exception):
     pass
@@ -153,7 +137,7 @@ async def delete_file(request: Request, file_path: str, event_name: str):
             unlock_file(file_path)
             time.sleep(wait_time)  # Wait and retry
         except FileNotFoundError:
-            #raise HTTPException(status_code=404, detail="File not found")
+            # Raise HTTPException(status_code=404, detail="File not found")
             print("File not found. Could be already removed\n")
             return Response(status_code=status.HTTP_404_NOT_FOUND)
         except ResourceLockedError as e:
@@ -162,48 +146,11 @@ async def delete_file(request: Request, file_path: str, event_name: str):
     
     raise UnknownError(status_code=409, detail="Conflict: File could not be deleted")
 
-"""    MUY INTEREANTE! 
-from http import HTTPStatus
-
-print(HTTPStatus.LOCKED)  # Output: HTTPStatus.LOCKED
-print(HTTPStatus.LOCKED.value)  # Output: 423
-print(HTTPStatus.LOCKED.phrase)  # Output: 'Locked'
-print(HTTPStatus.LOCKED.description)  # Output: 'The resource is locked.'
-"""
-
-""""
-@app.delete('/delete-file', response_class=Response)
-def delete_static_file(request: Request, file_path: str): #(CAMBIO INTENTAR BORRAR EL DICHOSO ARCHIVO)
-
-    try:
-        delete_file(file_path)
-        return Response(status_code=status.HTTP_204_NO_CONTENT)
-    except FileNotFoundError:
-        print('File was already deleted.')
-        return Response(status_code=status.HTTP_204_NO_CONTENT)
-    except Exception as e:
-        print(f'An unexpected error occurred= {e}')
-        if(status == status.HTTP_409_CONFLICT):
-            time.sleep(0.5)  #(CAMBIO) Pauses execution for 0.5 seconds
-            delete_static_file(request, file_path) #(CAMBIO) Nested call
-        return Response(status_code=status.HTTP_204_NO_CONTENT)
-"""        
-
-
-#from starlette.responses import StreamingResponse
-
-# Dictionary to track progress for each active download event
-#dl_progress = {}
 
 @app.get('/get-progress')
 async def get_progress(event_name: str):
     return StreamingResponse(progress_generator(event_name), media_type="text/event-stream")
 
-"""ESTA ES LA MIA
-@app.get('/get-progress')
-async def get_progress(event_name: str):
-    return StreamingResponse(progress_generator(event_name), media_type="text/event-stream")
-"""
 
 @app.get('/error_invalid_url')
 def error_invalid_url(request: Request):

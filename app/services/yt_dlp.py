@@ -33,34 +33,28 @@ def validate(url):
         return False
 
 def get_video_info(url: str):
-    # Crear una instancia de yt_dlp.YoutubeDL con las opciones adecuadas
+    # Create an instance of yt_dlp.YoutubeDL  with the propper options
     ydl_opts = {
-        'quiet': True,       # Para no mostrar demasiada salida en consola
-        'extract_flat': True # Extraer solo la información sin descargar el video
+        'quiet': True,       # For not to show to much info in terminal
+        'extract_flat': True # Don't download the file
     }
 
     with yt.YoutubeDL(ydl_opts) as ydl:
-        # Obtener la información del video
-        # No descargar, solo obtener información
+        # Get only file info, don't download it
         info_dict = ydl.extract_info(url, download=False)
-
+        # Get all available display_ids list
         video_id = info_dict["display_id"]
-        print((f'video_id= {video_id}'))
-
+        # Get and clean up file fulltitle
         fullname = info_dict.get("fulltitle", video_id)
-        print((f'fullname= {fullname}***')) #(CAMBIO)
-
         fullname = clean_file_name(fullname)
-        print((f'fullname= {fullname}***')) #(CAMBIO)
-
+        # Get file thumbnail 
         thumbnail = f'https://img.youtube.com/vi/{video_id}/maxresdefault.jpg'
-
-        # Acceder a la lista de formatos
+        # Get the formats list
         formats = info_dict.get("formats", [])
 
         return [fullname, formats, thumbnail]
 
-
+# Uniques video options with the lowest bit rates sorted by resolution
 def get_download_video_options(formats: list,
                          video_url: str,
                          base_url: str,
@@ -88,7 +82,6 @@ def get_download_video_options(formats: list,
     for f in min_bitrate_formats:
         
         file_approx = f.get("filesize_approx", 0)
-        print((f'file_approx= {file_approx}'))
 
         file_approx = bytes_to_megabytes(file_approx)
 
@@ -96,7 +89,7 @@ def get_download_video_options(formats: list,
 
         resolution = f'{f.get("height", None)}p'
 
-        if file_approx > 0: #(CAMBIO file_approx NO PUEDE SER CERO)
+        if file_approx > 0: # Zero not allowed
 
             options.append(
                 {
@@ -108,25 +101,22 @@ def get_download_video_options(formats: list,
                 }
             )
 
-    #(CAMBIO ELIMINA LOS format_id QUE CONTIENEN NUMEROS)
     options = filter_numeric_format_id(options)
 
-    #(CAMBIO ELIMINA LOS format_id DUPLICADOS, JUST IN CASE)
     options = filter_format_id(options)
 
-    #(CAMBIO MEJOR ORDENAR POR file_approx QUE POR format_id)
     options.sort(key=lambda format: format['file_approx'], reverse = True)
 
     return options
 
 
+# Uniques and standard audio options sorted by resolution
 def get_download_audio_options(formats: list,
                          audio_url: str,
                          base_url: str,
                          fullname: str):
 
     available_audio = [f for f in formats if f.get('height', None) is None]
-    #print(f'available_audio===== {available_audio}')
 
     options = []
 
@@ -142,11 +132,11 @@ def get_download_audio_options(formats: list,
 
         extension = f.get("ext", 'mp3')
 
-        if file_approx > 0: #(CAMBIO file_approx NO PUEDE SER CERO)
+        if file_approx > 0: # Zero not allowed
 
             options.append(
                 {
-                    'name': f'(Qty{code}){extension}', #(CAMBIO TEMPORAL)
+                    'name': f'(Qty{code}){extension}',
                     'code': code,
                     'format_id': format_id,
                     'file_approx': file_approx,
@@ -156,13 +146,10 @@ def get_download_audio_options(formats: list,
             )
 
     
-    #(CAMBIO ELIMINA LOS format_id QUE CONTIENEN NUMEROS)
     options = filter_numeric_format_id(options)
 
-    #(CAMBIO ELIMINA LOS format_id DUPLICADOS, JUST IN CASE)
     options = filter_format_id(options)
 
-    #(CAMBIO MEJOR ORDENAR POR file_approx QUE POR format_id)
     options.sort(key=lambda format: format['file_approx'], reverse = True)
 
     return options
@@ -200,10 +187,10 @@ def download_video(url: str, format_id: str, fullname: str, resolution: str):
             return file_path
         
     except Exception as e:
-        print(f'Download error= : {e}')
+        print(f'Download error. {e}')
 
 
-def download_audio(url: str, format_id: str, fullname: str, code: str): #(CAMBIO)
+def download_audio(url: str, format_id: str, fullname: str, code: str):
 
     ydl_opts = {
         'format': format_id,                  # Use the specified format ID
@@ -231,7 +218,8 @@ def download_audio(url: str, format_id: str, fullname: str, code: str): #(CAMBIO
             return file_path
         
     except Exception as e:
-        print(f'Download error= : {e}')
+        print(f'Download error. {e}')
+
 
 dl_progress = {}  # Global dictionary to store progress for each button/event
 
@@ -242,6 +230,7 @@ async def progress_generator(event_name: str):
     while dl_progress.get(event_name, 0) <= 100:
         yield f"event: {event_name}\ndata: {dl_progress.get(event_name, 0)}\n\n"
         await sleep(1.0)      
+
 
 def dl_progress_hook(d):
     info_dict = d.get("info_dict")  
@@ -260,20 +249,6 @@ def dl_progress_hook(d):
     else:
         dl_progress[event_name] = 100  # Mark as complete
 
-""" Unnecessary funs.
-def handle_download(event_name):
-    if event_name not in dl_progress:
-        dl_progress[event_name] = 0  # Initialize progress
-
-    #while dl_progress[event_name] < 100:  # Simulating download progress
-        #dl_progress[event_name] += 10  # Increment progress (Adjust based on actual logic)
-    update_ui(event_name, dl_progress[event_name])  # Update UI accordingly
-
-def update_ui(event_name, progress):
-    # Here you’d send the updated progress to the frontend
-    #dl_progress_hook()
-    print(f"Download progress for {event_name}: {progress}%")
-"""
 
 def delete_progress(event_name: str):
     try:
@@ -281,32 +256,7 @@ def delete_progress(event_name: str):
     except:
         print(f'Progress delete error= ', { event_name })
 
-"""ESTA ES LA MIA
-dl_progress = 0
-async def progress_generator(event_name: str):
-    while dl_progress <= 100:
-        yield f"event: {event_name}\ndata: {dl_progress}\n\n"
-        await sleep(1.0)
-"""
 
-"""ESTA ES LA MIA
-    def dl_progress_hook(d):
-    global dl_progress
-
-    #print('Status...', d["status"])
-    if d["status"] == "downloading":
-        dl_progress = round(d["_percent"], 1)
-    else:
-        dl_progress = 0
-"""        
-
-"""
-def delete_file(file_path: str):
-    if os.path.exists(file_path):
-       os.unlink(file_path)
-    else:
-        raise Exception({'File not found'})
-"""
 class ResourceLockedError(Exception):
     pass
 def unlock_file(file_path):

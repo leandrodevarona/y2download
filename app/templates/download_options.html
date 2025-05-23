@@ -65,10 +65,9 @@
         </div>
     </main>
 
-    <!-- Placeholder for Python function -->
     <script>
         function analyze(url) {
-            window.location.href = `/download_video?url=${url}` //(CAMBIO OJO)
+            window.location.href = `/download_video?url=${url}`
         }
 
         function showTab(tabName) {
@@ -126,9 +125,8 @@
             button.disabled = false;
             span.hidden = false;
             loader.hidden = true;
-            span.style.color = "red"; //(CAMBIO, INDICA QUE EL ARCHIVO YA SE DESCARGO)
+            span.style.color = "red";
         }
-
 
         async function initDownload(url, formatId) {
             showLoader(formatId);
@@ -165,114 +163,14 @@
                 console.error('Download error:', error);
             }
 
-            // Cleanup
+            // Cleaning up
             source.close();
             source.removeEventListener(eventName, eventProgress);
             hideProgress(formatId);
         }
 
-        /*async function initDownload(url, formatId) {
-            showLoader(formatId);
-
-            const eventName = 'progressUpdate' + formatId;
-
-            const source = new EventSource(`http://127.0.0.1:8000/get-progress?event_name=${eventName}`);
-
-            try {
-                function eventProgress(event) {
-                    const progress = JSON.parse(event.data);
-                    console.log('ProgressUpdate= ', progress);
-                    showProgress(progress, formatId);
-                }
-
-                source.addEventListener(eventName, eventProgress);
-
-                // (CAMBIO, COPILOT'S SUGGESTION)
-                // download process lacks a timeout mechanism. If the server is unresponsive, it may hang indefinitely.
-                const controller = new AbortController();
-                const timeout = setTimeout(() => controller.abort(), 1000000); // 10-sec timeout// 1000-sec
-
-                try {
-                    let response = await fetch(url, { signal: controller.signal });
-                    clearTimeout(timeout);
-
-                    if (!response.ok) throw new Error('Network error');
-
-                    const data = (await response.json());
-
-                    const domain = window.location.origin;
-
-                    const file_path = domain + '/' + data.file_path;
-                    console.log('file_path= ', file_path);
-
-                    const link = document.createElement('a');
-                    link.href = file_path;
-                    link.download = '';
-                    link.click();
-
-                    hiddenLoader(formatId);
-
-                    source.close();
-                    //source = null; // (CAMBIO), COPILOT'S SUGGESTION // Free memory, DA BATEO)
-                    source.removeEventListener(eventName, eventProgress)
-                    hideProgress(formatId);
-
-                    setTimeout(async () => {
-                        try {
-                            await fetch(`/delete-file?file_path=${data.file_path}`, { method: 'DELETE' });
-                        } catch (e) {
-                            console.error("Error deleting file:", e);
-                        }
-                    }, 500); // Delay for the browser to rename the downloaded file
-
-                } catch (error) {
-                    if (error.name === 'AbortError') {
-                        console.error('Download timeout');
-                    } else {
-                        console.error('Network error:', error);
-                    }
-                }
-                // (END OF SUGGESTION)*/
-
-                /*let response = await fetch(url); 
-
-                if (!response.ok) throw new Error('Network error');
-
-                const data = (await response.json());
-
-                const domain = window.location.origin;
-
-                const file_path = domain + '/' + data.file_path;
-                console.log('file_path= ', file_path);
-
-                const link = document.createElement('a');
-                link.href = file_path;
-                link.download = '';
-                link.click();
-
-                hiddenLoader(formatId);
-
-                setTimeout(async () => {
-                    try {
-                        await fetch(`/delete-file?file_path=${data.file_path}`, { method: 'DELETE' });
-                    } catch (e) {
-                        console.error("Error deleting file:", e);
-                    }
-                }, 500); // Delay for the browser to rename the downloaded file
-
-            } catch (error) {
-                console.error('Problem downloading in initDownload===== ', error);
-            }
-
-            /*source.close();
-            source = null; // (CAMBIO, COPILOT'S SUGGESTION)
-            source.removeEventListener(eventName, eventProgress)
-            hideProgress(formatId);
-        }*/
-
         const slideColor = 'yellowgreen'
         const rangeColor = 'red';
-
         function fillProgress(progressId, progressValue) {
             const progressElem = document.getElementById(progressId);
             if (progressElem) {

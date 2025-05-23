@@ -18,3 +18,12 @@ def handle_download(event_name):
     print(f"\ndl_progress = {dl_progress}")
 
 handle_download('event_name')
+
+"""    MUY INTEREANTE! 
+from http import HTTPStatus
+
+print(HTTPStatus.LOCKED)  # Output: HTTPStatus.LOCKED
+print(HTTPStatus.LOCKED.value)  # Output: 423
+print(HTTPStatus.LOCKED.phrase)  # Output: 'Locked'
+print(HTTPStatus.LOCKED.description)  # Output: 'The resource is locked.'
+"""
