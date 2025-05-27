@@ -12,7 +12,7 @@ from fastapi.templating import Jinja2Templates
 from app.services.yt_dlp import (download_video,
                                  download_audio,
                                  validate,
-                                 get_video_info,
+                                 get_file_info,
                                  get_download_video_options,
                                  get_download_audio_options,
                                  progress_generator,
@@ -31,7 +31,7 @@ app.add_middleware(
     CORSMiddleware,
     allow_origins=["*"],  # Allows requests from any source
     allow_credentials=True,
-    allow_methods=["*"], # Allows all methods (GET, POST, PUT, DELETE, etc.)
+    allow_methods=["*"],  # Allows all methods (GET, POST, PUT, DELETE, etc.)
     allow_headers=["*"],  # Allows all headers
 )
 
@@ -53,7 +53,7 @@ async def download_options(request: Request, url: str):
         return RedirectResponse(f'{request.base_url}error_invalid_url')
     else:
 
-        fullname, formats, thumbnail = get_video_info(url)
+        fullname, formats, thumbnail = get_file_info(url)
 
         fullname = remove_trailing_spaces(fullname)
 

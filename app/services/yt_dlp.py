@@ -32,7 +32,7 @@ def validate(url):
         print(e)
         return False
 
-def get_video_info(url: str):
+def get_file_info(url: str):
     # Create an instance of yt_dlp.YoutubeDL  with the propper options
     ydl_opts = {
         'quiet': True,       # For not to show to much info in terminal
@@ -47,8 +47,12 @@ def get_video_info(url: str):
         # Get and clean up file fulltitle
         fullname = info_dict.get("fulltitle", video_id)
         fullname = clean_file_name(fullname)
-        # Get file thumbnail 
-        thumbnail = f'https://img.youtube.com/vi/{video_id}/maxresdefault.jpg'
+        # Get file thumbnail
+        if os.path.exists(f'https://img.youtube.com/vi/{video_id}/maxresdefault.jpg'):
+            thumbnail = os.path
+        else:
+            #set default logo        
+            thumbnail = info_dict.get("thumbnail", video_id)
         # Get the formats list
         formats = info_dict.get("formats", [])
 
@@ -155,6 +159,14 @@ def get_download_audio_options(formats: list,
     return options
 
 
+def get_format_video_str(format_id: str):
+
+    format_video_str = f"{format_id}+ba[ext=m4a]/{format_id}\
+        +ba/bv*[ext=mp4]+ba[ext=m4a]/b[ext=mp4]/bv*+ba/b"
+
+    return format_video_str
+
+
 def download_video(url: str, format_id: str, fullname: str, resolution: str):
 
     try:
@@ -162,8 +174,10 @@ def download_video(url: str, format_id: str, fullname: str, resolution: str):
         ffmpeg_path = os.path.join(os.path.dirname(
             __file__), 'ffmpeg', 'bin', 'ffmpeg.exe')
         
+        format_str = get_format_video_str(format_id)
+        
         ydl_opts = {
-            'format': format_id,                  # Use the specified format ID
+            'format': format_str,                  # Use the specified format_str
             'ffmpeg_location': ffmpeg_path,
             # Save file with the desired fullname in \static\
             'outtmpl': f'static/{fullname}({resolution}).' + '%(ext)s',
