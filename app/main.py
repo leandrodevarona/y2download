@@ -21,8 +21,6 @@ from app.services.yt_dlp import (download_video,
 from fastapi.middleware.cors import CORSMiddleware
 from app.utils.strings import (remove_trailing_spaces,
                               remove_leading_spaces)
-from asyncio import sleep
-
 
 app = FastAPI()
 
@@ -53,7 +51,7 @@ async def download_options(request: Request, url: str):
         return RedirectResponse(f'{request.base_url}error_invalid_url')
     else:
 
-        fullname, formats, thumbnail = get_file_info(url)
+        fullname, formats, thumbnail = get_file_info(url) # (CAMBIO)
 
         fullname = remove_trailing_spaces(fullname)
 
@@ -72,7 +70,7 @@ async def download_options(request: Request, url: str):
                 'fullname': fullname,
                 'video_options': video_options,
                 'audio_options': audio_options,
-                'thumbnail': thumbnail
+                'thumbnail': thumbnail,
             }
         )
 
@@ -82,13 +80,15 @@ def download_video_file(request: Request,
                    url: str,
                    fullname: str,
                    format_id: str,
-                   resolution: str):
+                   resolution: str,
+                   event_name: str
+                   ):
     
     fullname = remove_trailing_spaces(fullname)
 
     format_id = remove_leading_spaces(format_id)
 
-    file_path = download_video(url, format_id, fullname, resolution)
+    file_path = download_video(url, format_id, fullname, resolution, event_name)
 
     if file_path == 'error_invalid_url':
         return RedirectResponse(f'{request.base_url}{file_path}')
@@ -101,13 +101,15 @@ def download_audio_file(request: Request,
                    url: str,
                    fullname: str,
                    format_id: str,
-                   code: int):
+                   quality: str,
+                   event_name: str
+                   ):
     
     fullname = remove_trailing_spaces(fullname)
 
     format_id = remove_leading_spaces(format_id)
 
-    file_path = download_audio(url, format_id, fullname, code)
+    file_path = download_audio(url, format_id, fullname, quality, event_name) 
 
     if file_path == 'error_invalid_url':
         return RedirectResponse(f'{request.base_url}{file_path}')

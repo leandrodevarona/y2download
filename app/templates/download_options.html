@@ -27,12 +27,12 @@
                     <table class="options_table">
                         {% for video_option in video_options %}
                         <tr>
-                            <th>{{video_option.format_id}}</th>
-                            <th>{{video_option.name}}</th>
+                            <th>{{video_option.extension}}</th>
+                            <th>{{video_option.res_str}}</th>
                             <th>{{video_option.size}}</th>
                             <th>
                                 <button id="{{video_option.format_id}}"
-                                    onclick="initDownload('{{video_option.url}}', '{{video_option.format_id}}')">
+                                    onclick="initDownload('{{video_option.url}}', '{{video_option.format_id}}', '{{video_option.event_name}}')">
                                     <span id="span_{{video_option.format_id}}">Download</span>
                                     <div id="loader_{{video_option.format_id}}" class="dots_loader" hidden></div>
                                 </button>
@@ -47,12 +47,12 @@
                     <table class="options_table">
                         {% for audio_option in audio_options %}
                         <tr>
-                            <th>{{audio_option.format_id}}</th>
-                            <th>{{audio_option.name}}</th>
+                            <th>{{audio_option.extension}}</th>
+                            <th>{{audio_option.qty_str}}</th>
                             <th>{{audio_option.size}}</th>
                             <th>
                                 <button id="{{audio_option.format_id}}"
-                                    onclick="initDownload('{{audio_option.url}}', '{{audio_option.format_id}}')">
+                                    onclick="initDownload('{{audio_option.url}}', '{{audio_option.format_id}}', '{{audio_option.event_name}}')">
                                     <span id="span_{{audio_option.format_id}}">Download</span>
                                     <div id="loader_{{audio_option.format_id}}" class="dots_loader" hidden></div>
                                 </button>
@@ -128,11 +128,10 @@
             span.style.color = "red";
         }
 
-        async function initDownload(url, formatId) {
+        async function initDownload(url, formatId, eventName) {
             showLoader(formatId);
 
-            // Unique event name based on button ID
-            const eventName = 'progressUpdate_' + formatId;
+            // Unique key per download event based on button ID
             const source = new EventSource(`http://127.0.0.1:8000/get-progress?event_name=${eventName}`);
 
             try {
@@ -160,7 +159,7 @@
                     await fetch(`/delete-file?file_path=${data.file_path}&event_name=${eventName}`, { method: 'DELETE' });
                 }, 1000);
             } catch (error) {
-                console.error('Download error:', error);
+                console.error('Download error: ', error);
             }
 
             // Cleaning up

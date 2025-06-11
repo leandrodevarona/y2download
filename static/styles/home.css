@@ -63,10 +63,14 @@ h1 {
   width: 100%;
   height: 60px;
   background-color: white;
-  padding: 0px 60px 0px 6px;
+  padding: 0px 10px 0px 6px;
   border: 5px solid red; /* Red border */
   border-radius: 5px; /* Rounded corners */
   font-size: 16px;
+}
+
+input[type="search"]::-webkit-search-cancel-button {
+  padding: 10px;
 }
 
 #btn-submit {

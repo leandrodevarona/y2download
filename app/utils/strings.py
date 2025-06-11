@@ -1,4 +1,6 @@
 import re
+import random
+import string
 
 
 def clean_file_name(name):
@@ -30,4 +32,8 @@ def filter_format_id(list):
             seen.add(item['format_id'])
 
     return filtered_list
- 
+
+def get_random_string(chars_number: int):
+    # Generar un string con 4 caracteres aleatorios
+    return ''.join(random.choices(string.ascii_letters + string.digits, k=chars_number))
+
