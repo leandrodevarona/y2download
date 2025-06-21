@@ -16,8 +16,8 @@ from app.services.yt_dlp import (download_video,
                                  get_download_video_options,
                                  get_download_audio_options,
                                  progress_generator,
-                                 delete_progress,
-                                 unlock_file)
+                                 delete_progress
+                                 )
 from fastapi.middleware.cors import CORSMiddleware
 from app.utils.strings import (remove_trailing_spaces,
                               remove_leading_spaces)
@@ -136,7 +136,7 @@ async def delete_file(request: Request, file_path: str, event_name: str):
             return Response(status_code=status.HTTP_200_OK)
         except PermissionError:
             print(f"Waiting for '{file_path}' to be unlocked. Lap {lap}\n")
-            unlock_file(file_path)
+            # unlock_file(file_path)
             time.sleep(wait_time)  # Wait and retry
         except FileNotFoundError:
             # Raise HTTPException(status_code=404, detail="File not found")
@@ -146,7 +146,7 @@ async def delete_file(request: Request, file_path: str, event_name: str):
             print("The resource is locked and cannot be accessed {e}\n")
             return Response(status_code=status.HTTP_423_LOCKED)
     
-    raise UnknownError(status_code=409, detail="Conflict: File could not be deleted")
+    # raise UnknownError(status_code=409, detail="Conflict: File could not be deleted")
 
 
 @app.get('/get-progress')

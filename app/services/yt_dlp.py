@@ -11,7 +11,7 @@ from asyncio import sleep
 from fastapi.responses import Response
 from fastapi import status
 
-dl_progress = {}  # Global dictionary to store progress for each button/event (CAMBIO )
+dl_progress = {}  # Global dictionary to store progress for each button/event
 
 def validate(url):
     try:
@@ -258,8 +258,13 @@ async def progress_generator(event_name: str):
             dl_progress[event_name] = 0  # Initialize progress
 
     while dl_progress.get(event_name, 0) <= 100:
-        yield f"event: {event_name}\ndata: {dl_progress.get(event_name, 0)}\n\n"
-        await sleep(1.0)      
+        if dl_progress[event_name] != -1:
+            yield f"event: {event_name}\ndata: {dl_progress.get(event_name, 0)}\n\n"
+            await sleep(0.5)
+        else:
+            # Stop event processing (I guess!)
+            dl_progress[event_name] = 100
+            yield f"event: {event_name}\ndata: {dl_progress.get(event_name, 0)}\n\n"
 
 
 def wrapper_progress_hook(event_name, max_retries=3, delay=2):
@@ -268,12 +273,14 @@ def wrapper_progress_hook(event_name, max_retries=3, delay=2):
         try:
             if status in ["downloading", "extracting", "post-processing"]:
                 dl_progress[event_name] = round(d["_percent"], 1)
-                print(f"[{event_name}] Progress: {dl_progress[event_name]}%")
+                #print(f"[{event_name}] Progress: {dl_progress[event_name]}%")
             elif status in ["finished", "done"]:
                 dl_progress[event_name] = 100  # Mark as complete
                 print(f"[{event_name}] download COMPLITED!")
             elif status == 'error':
-                raise Exception(f"An error has occurred: {d.get('error', 'Unknown error')}")
+                dl_error = d.get('error', 'Unknown error')
+                raise Exception(f"An error has occurred: {dl_error}")
+                print(f"An error has occurred: {dl_error}")
             elif status == 'cancelled':
                 raise Exception("Download canceled.")
             else:
