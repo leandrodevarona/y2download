@@ -92,8 +92,11 @@ def download_video_file(request: Request,
 
     if file_path == 'error_invalid_url':
         return RedirectResponse(f'{request.base_url}{file_path}')
+    
+    if file_path is None:
+        return Response(status_code=status.HTTP_404_NOT_FOUND)
 
-    return JSONResponse({'file_path': file_path}, status_code=200)
+    return JSONResponse({'file_path': file_path}, status_code=status.HTTP_200_OK)
 
 
 @app.get('/download_audio/', response_class=RedirectResponse | JSONResponse)
@@ -113,8 +116,11 @@ def download_audio_file(request: Request,
 
     if file_path == 'error_invalid_url':
         return RedirectResponse(f'{request.base_url}{file_path}')
+    
+    if file_path is None:
+        return Response(status_code=status.HTTP_404_NOT_FOUND)
 
-    return JSONResponse({'file_path': file_path}, status_code=200)
+    return JSONResponse({'file_path': file_path}, status_code=status.HTTP_200_OK)
 
 
 class ResourceLockedError(Exception):

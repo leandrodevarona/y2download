@@ -273,7 +273,6 @@ def wrapper_progress_hook(event_name, max_retries=3, delay=2):
         try:
             if status in ["downloading", "extracting", "post-processing"]:
                 dl_progress[event_name] = round(d["_percent"], 1)
-                #print(f"[{event_name}] Progress: {dl_progress[event_name]}%")
             elif status in ["finished", "done"]:
                 dl_progress[event_name] = 100  # Mark as complete
                 print(f"[{event_name}] download COMPLITED!")
@@ -285,6 +284,7 @@ def wrapper_progress_hook(event_name, max_retries=3, delay=2):
                 raise Exception("Download canceled.")
             else:
                 print(f"[{event_name}] Status '{status}', progress: {dl_progress.get(event_name, 0)}")
+                print(f"[youtube ERROR]: Failed to extract any player response... {status}, {dl_error}\n") # (CAMBIO)
         except Exception as e:
             print(f"[{event_name}] Exception: {e}")
             # Retrying
