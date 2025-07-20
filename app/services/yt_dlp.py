@@ -304,7 +304,7 @@ def delete_progress(event_name: str):
     except:
         print(f'Progress delete error: ', { event_name })
 
-
+""" NOT NESSESARY
 class ResourceLockedError(Exception):
     pass
 def unlock_file(file_path):
@@ -319,3 +319,4 @@ def unlock_file(file_path):
     except ResourceLockedError as e:
         print(e)
         return Response(status_code=status.HTTP_423_LOCKED)
+"""

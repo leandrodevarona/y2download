@@ -23,6 +23,7 @@ from app.utils.strings import (remove_trailing_spaces,
                               remove_leading_spaces)
 
 app = FastAPI()
+port = os.environ.get("port") #(CAMBIO)
 
 # CORS configuration
 app.add_middleware(
@@ -131,7 +132,7 @@ class UnknownError(Exception):
 async def delete_file(request: Request, file_path: str, event_name: str):
     # Deletes a file, waiting if it's being used by another process.
     max_retries = 10  # Number of times to check if the file is free
-    wait_time = 1  # Seconds to wait between retries
+    wait_time = 2  # Seconds to wait between retries
 
     delete_progress(event_name)
 
