@@ -304,7 +304,7 @@ def delete_progress(event_name: str):
     except:
         print(f'Progress delete error: ', { event_name })
 
-""" NOT NESSESARY
+""" NOT NECESSARY
 class ResourceLockedError(Exception):
     pass
 def unlock_file(file_path):
