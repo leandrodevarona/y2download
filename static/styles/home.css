@@ -1,12 +1,14 @@
 body {
   font-family: Arial, sans-serif;
-  background-color: #f0f0f0; /* Light gray background */
+  background-color: #f0f0f0;
+  /* Light gray background */
   display: flex;
   flex-direction: column;
   justify-content: center;
   align-items: center;
   gap: 2rem;
-  height: 95vh; /* Full height for centering */
+  height: 95vh;
+  /* Full height for centering */
   margin: 0;
   padding: 1rem;
 }
@@ -20,7 +22,8 @@ body {
   align-items: center;
   gap: 1.2rem;
 
-  background-color: #fff; /* White background for form */
+  background-color: #fff;
+  /* White background for form */
   border-radius: 10px;
   box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
   padding: 20px;
@@ -36,14 +39,15 @@ body {
   flex-direction: column;
 }
 
-.download_form__content form{
+.download_form__content form {
   width: 100%;
   display: flex;
   justify-content: center;
 }
 
 h1 {
-  color: #333; /* Dark gray color for title */
+  color: #333;
+  /* Dark gray color for title */
 }
 
 .blink {
@@ -54,7 +58,7 @@ h1 {
 
 @keyframes blink-animation {
   50% {
-      opacity: 0;
+    opacity: 0;
   }
 }
 
@@ -64,8 +68,10 @@ h1 {
   height: 60px;
   background-color: white;
   padding: 0px 10px 0px 6px;
-  border: 5px solid red; /* Red border */
-  border-radius: 5px; /* Rounded corners */
+  border: 5px solid red;
+  /* Red border */
+  border-radius: 5px;
+  /* Rounded corners */
   font-size: 16px;
 }
 
@@ -77,22 +83,25 @@ input[type="search"]::-webkit-search-cancel-button {
   width: 60px;
   height: 60px;
   color: white;
-  background: red; /* Red background for button */
+  background: red;
+  /* Red background for button */
   border: none;
-  border-radius: 5px; /* Rounded corners */
+  border-radius: 5px;
+  /* Rounded corners */
   padding: 10px;
   font-size: 16px;
   cursor: pointer;
   margin-left: 10px;
 }
 
-#btn-submit:disabled{
+#btn-submit:disabled {
   opacity: 0.5;
   cursor: not-allowed;
 }
 
 #btn-submit:hover {
-  background-color: #d60000; /* Darker red on hover */
+  background-color: #d60000;
+  /* Darker red on hover */
 }
 
 .download_options {
@@ -122,13 +131,251 @@ input[type="search"]::-webkit-search-cancel-button {
 .loader {
   width: calc(200px / cos(45deg));
   height: 20px;
-  background: repeating-linear-gradient(-45deg, #008000 0 15px, #ff0 15px 30px)
-    left/200% 100%;
+  background: repeating-linear-gradient(-45deg, #008000 0 15px, #ff0 15px 30px) left/200% 100%;
   animation: l3 2s infinite linear;
 }
 
 @keyframes l3 {
   100% {
     background-position: right;
+  }
+}
+
+/*CAMBIO BOTONES LIKE, UNLIKE, SHARE
+
+footer {
+  width: 100%;
+  height: 15vh;
+  font-size: 1rem;
+  font-family: Arial, sans-serif;
+  scrollbar-color: var(--yt-spec-text-secondary) transparent;
+  margin: 0;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  align-items: center;
+  display: flex;
+  flex-direction: row;
+  margin-bottom: 4px;
+}
+
+.buttons_box_container {
+  max-width: 350px;
+  width: 100%;
+  height: 60px;
+  display: block;
+}
+
+.like_button {
+  border-top-left-radius:30px;
+  border-bottom-left-radius:30px;
+  width: 60px; 
+  height: 60px;
+}
+
+.do_not_like_button {
+  border-top-right-radius:30px;
+  border-bottom-right-radius:30px;
+  width: 60px; 
+  height: 60px;
+}
+
+============================================================*/
+
+/* Basic reset and body styling to push footer to the bottom */
+body {
+  margin: 0;
+  min-height: 100vh;
+  /* Ensures the body takes at least the full viewport height */
+  display: flex;
+  flex-direction: column;
+  /* Stacks children vertically */
+  font-family: 'Inter', sans-serif;
+  /* Using Inter font */
+}
+
+/* Main content area to demonstrate footer positioning */
+main {
+  flex-grow: 1;
+  /* Allows main content to take up available space, pushing footer down */
+  padding: 20px;
+  background-color: #f9f9f9;
+  color: #333;
+}
+
+/* Footer styling */
+footer {
+  background-color: #f0f0f0;
+  padding: 10px 20px;
+  display: flex;
+  justify-content: flex-start;
+  /* Aligns content to the left */
+  align-items: center;
+  /* Vertically centers items */
+  border-top: 1px solid #e0e0e0;
+  box-shadow: 0 -2px 5px rgba(0, 0, 0, 0.05);
+  /* Subtle shadow for depth */
+}
+
+/* Container for the buttons */
+.footer-buttons-container {
+  max-width: 350px;
+  /* Max width as requested */
+  width: 100%;
+  /* Responsive width */
+  height: 60px;
+  /* Fixed height as requested */
+  display: flex;
+  align-items: center;
+  /* Vertically centers buttons */
+  justify-content: space-around;
+  /* Distributes space evenly between buttons */
+  gap: 10px;
+  /* Space between buttons */
+  padding: 0 10px;
+  /* Small horizontal padding inside the container */
+}
+
+/* Styling for individual buttons */
+.footer-button {
+  display: flex;
+  color: #ffff;
+  /* Text color */
+  align-items: center;
+  /* Aligns SVG and text vertically */
+  background-color: #333333f2;
+  /* No background by default */
+  border: none;
+  /* No border by default */
+  padding: 8px 12px;
+  cursor: pointer;
+  /* Indicates interactivity */
+  font-size: 1rem;
+  transition: background-color 0.3s ease, transform 0.1s ease;
+  /* Smooth transition for hover effects */
+  border-radius: 20px;
+  /* Rounded corners for a modern look */
+  white-space: nowrap;
+  /* Prevents text from wrapping */
+}
+
+/* Hover effect for buttons */
+.footer-button:hover {
+  background-color: #0f0f0f;
+  /*background-color: #e0e0e0;*/
+  /* Light gray background on hover */
+  transform: translateY(-1px);
+  /* Slight lift effect */
+}
+
+/* Active (click) effect for buttons */
+.footer-button:active {
+  transform: translateY(0);
+  /* Resets lift on click */
+  background-color: #0f0f0f;
+  /*background-color: #d0d0d0;*/
+  /* Darker background on active */
+}
+
+/* Styling for SVG icons within buttons */
+.footer-button svg {
+  width: 20px;
+  /* Icon width */
+  height: 20px;
+  /* Icon height */
+  margin-right: 5px;
+  /* Space between icon and text */
+  fill: #ffff;
+  /* Default icon color */
+  transition: fill 0.3s ease;
+  /* Smooth transition for icon color */
+}
+
+/* Icon color change on button hover */
+.footer-button:hover svg {
+  fill: #ffff;
+  /* Icon color remains on hover */
+}
+
+/* Styling for the number span (e.g., like count) */
+.footer-button span {
+  font-weight: 500;
+  /* Slightly bolder font for numbers */
+  margin-left: 3px;
+  /* Small space between text and number */
+  /*color: #555;*/
+  /* Slightly darker color for numbers */
+}
+
+/* Responsive adjustments for smaller screens if needed */
+@media (max-width: 400px) {
+  .footer-buttons-container {
+    flex-direction: column;
+    /* Stack buttons vertically on very small screens */
+    height: auto;
+    /* Adjust height automatically */
+    padding: 10px;
+  }
+
+  .footer-button {
+    width: 100%;
+    /* Full width buttons when stacked */
+    justify-content: center;
+    /* Center content within button */
+    margin-bottom: 5px;
+    /* Space between stacked buttons */
+  }
+}
+
+#share_dialog {
+  border: none;
+  border-radius: 10px;
+  padding: 1rem;
+
+  header {
+    display: flex;
+    justify-content: flex-end;
+
+    .close_dialog {
+      border: none;
+      background-color: transparent;
+      cursor: pointer;
+    }
+  }
+
+  .share_social_media {
+
+    .social_media_list {
+      display: flex;
+      flex-direction: row;
+      gap: 1rem;
+      padding-inline-start: 0;
+
+      li {
+        list-style: none;
+        padding: 1rem;
+        border-radius: 10px;
+
+        background-color: #e0e0e0;
+        cursor: pointer;
+      }
+    }
+  }
+
+  .share_copy_url {
+
+    .copy_url_container {
+      border-radius: 5px;
+      background-color: #e0e0e0;
+      padding: 1rem;
+    }
+
+    #copy_url_input {
+      appearance: none;
+      -moz-appearance: none;
+      -webkit-appearance: none;
+      border: none;
+      background-color: transparent;
+    }
   }
 }

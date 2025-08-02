@@ -8,6 +8,7 @@ from fastapi.responses import (HTMLResponse,
                                StreamingResponse)
 from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
+from numerize import numerize
 
 from app.services.yt_dlp import (download_video,
                                  download_audio,
@@ -18,9 +19,12 @@ from app.services.yt_dlp import (download_video,
                                  progress_generator,
                                  delete_progress
                                  )
+from app.services import metadata
+
 from fastapi.middleware.cors import CORSMiddleware
 from app.utils.strings import (remove_trailing_spaces,
                               remove_leading_spaces)
+                              
 
 app = FastAPI()
 port = os.environ.get("port") #(CAMBIO)
@@ -40,8 +44,18 @@ templates = Jinja2Templates(directory="app/templates")
 
 @app.get('/', response_class=HTMLResponse)
 def home_view(request: Request):
+    meta = metadata.get_metadata()
+
+    likes = numerize.numerize(meta.likes)
+    dislikes = numerize.numerize(meta.dislikes)
+
     return templates.TemplateResponse(
-        request=request, name = 'home.html'
+        request=request, 
+        name = 'home.html', 
+        context={
+            "likes": likes,
+            "dislikes": dislikes,
+        }
     )
 
 @app.get('/download-options/', response_class=HTMLResponse)
@@ -165,3 +179,18 @@ async def get_progress(event_name: str):
 def error_invalid_url(request: Request):
     return templates.TemplateResponse(
         request=request, name="error_invalid_url.html")
+
+
+@app.put('/metadata/like')
+def like():
+    likes = metadata.like()
+    likes = numerize.numerize(likes)
+
+    return JSONResponse({'likes': likes}, status_code=status.HTTP_200_OK)
+
+@app.put('/metadata/dislike')
+def dislike():
+    dislikes = metadata.dislike()
+    dislikes = numerize.numerize(dislikes)
+    
+    return JSONResponse({'dislikes': dislikes}, status_code=status.HTTP_200_OK)

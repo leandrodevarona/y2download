@@ -173,6 +173,7 @@
                 setTimeout(async () => {
                     await fetch(`/delete-file?file_path=${data.file_path}&event_name=${eventName}`, { method: 'DELETE' });
                 }, 1000);
+                
             } catch (error) {
 
                 showError(formatId);
