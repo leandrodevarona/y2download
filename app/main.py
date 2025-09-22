@@ -27,7 +27,6 @@ from app.utils.strings import (remove_trailing_spaces,
                               
 
 app = FastAPI()
-port = os.environ.get("port") #(CAMBIO)
 
 # CORS configuration
 app.add_middleware(
@@ -51,7 +50,7 @@ def home_view(request: Request):
 
     return templates.TemplateResponse(
         request=request, 
-        name = 'home.html', 
+        name = 'home.html',
         context={
             "likes": likes,
             "dislikes": dislikes,
@@ -66,7 +65,7 @@ async def download_options(request: Request, url: str):
         return RedirectResponse(f'{request.base_url}error_invalid_url')
     else:
 
-        fullname, formats, thumbnail = get_file_info(url) # (CAMBIO)
+        fullname, formats, thumbnail = get_file_info(url)
 
         fullname = remove_trailing_spaces(fullname)
 

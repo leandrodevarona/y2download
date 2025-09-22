@@ -284,7 +284,7 @@ def wrapper_progress_hook(event_name, max_retries=3, delay=2):
                 raise Exception("Download canceled.")
             else:
                 print(f"[{event_name}] Status '{status}', progress: {dl_progress.get(event_name, 0)}")
-                print(f"[youtube ERROR]: Failed to extract any player response... {status}, {dl_error}\n") # (CAMBIO)
+                print(f"[youtube ERROR]: Failed to extract any player response... {status}, {dl_error}\n")
         except Exception as e:
             print(f"[{event_name}] Exception: {e}")
             # Retrying
