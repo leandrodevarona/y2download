@@ -58,7 +58,7 @@ def home_view(request: Request):
     )
 
 @app.get('/download-options/', response_class=HTMLResponse)
-async def download_options(request: Request, url: str):
+async def download_options(request: Request, url: str, all_videos: bool):
     is_valid_url = validate(url)
 
     if not is_valid_url:
@@ -73,7 +73,7 @@ async def download_options(request: Request, url: str):
 
         audio_options = [] 
 
-        video_options = get_download_video_options(formats, url, request.base_url, fullname)
+        video_options = get_download_video_options(formats, url, request.base_url, fullname, all_videos)
         
         audio_options = get_download_audio_options(formats, url, request.base_url, fullname)
         
@@ -95,7 +95,7 @@ def download_video_file(request: Request,
                    fullname: str,
                    format_id: str,
                    resolution: str,
-                   event_name: str
+                   event_name: str,
                    ):
     
     fullname = remove_trailing_spaces(fullname)

@@ -15,17 +15,19 @@
         <section class="download_form__content">
             <h1>Download Video and Audio <span class="blink">Online</span> from YouTube</h1>
             <form onsubmit="show_download_options(event)">
-                <input type="search" id="Url_Path" name="url" placeholder="Place YouTube link here..."
-                    autocomplete="off" required />
-                <button title="Start" type="submit" aria-label="Start" id="btn-submit" class="btn btn-lg">
-                    Start
-                </button>
+                <div class="search-container">
+                    <input type="search" id="Url_Path" name="url" placeholder="Place YouTube link here..."
+                        autocomplete="off" required />
+                    <button title="Start" type="submit" aria-label="Start" id="btn-submit" class="btn btn-lg">
+                        Start
+                    </button>
+                </div>
+                <div class="checkbox-container">
+                    <label>Show all available Video formats
+                        <input type="checkbox" id="showAllFormats" name="all_videos">
+                    </label>
+                </div>
             </form>
-            <div class="checkbox-container">
-                <label>Mostrar todos los formatos de Video disponibles
-                    <input type="checkbox" id="showAllFormats" name="showAllFormats_checkBox">
-                </label>
-            </div>
         </section>
 
         <section id="download_options" class="download_options">
@@ -39,7 +41,7 @@
     <footer>
         <div class="footer-buttons-container">
             <!-- Like Button -->
-            <button class="footer-button" title="I like this" onclick="like()">
+            <button class="footer-button" title="I like this" onclick="handleButtonClick(this)">
                 <!-- SVG for Like icon (Thumb Up) -->
                 <svg xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 -960 960 960" width="24px"
                     fill="#e3e3e3">
@@ -50,7 +52,7 @@
             </button>
 
             <!-- Dislike Button -->
-            <button class="footer-button" title="I don't like this" onclick="dislike()">
+            <button class="footer-button" title="I don't like this" onclick="handleButtonClick(this)">
                 <!-- SVG for Dislike icon (Thumb Down - rotated Like icon) -->
                 <svg xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 -960 960 960" width="24px"
                     fill="#e3e3e3">
@@ -61,7 +63,8 @@
             </button>
 
             <!-- Share Button -->
-            <button class="footer-button" title="Share" commandfor="share_dialog" command="show-modal">
+            <button class="footer-button" title="Share" commandfor="share_dialog" command="show-modal"
+                onclick="handleButtonClick(this)">
                 <!-- SVG for Share icon -->
                 <svg xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 -960 960 960" width="24px">
                     <path
@@ -69,7 +72,6 @@
                 </svg> Share
             </button>
         </div>
-
     </footer>
 
     <dialog id="share_dialog">
@@ -125,8 +127,9 @@
             event.preventDefault();
 
             const url = event.target.url.value;
+            const all_videos = event.target.all_videos.checked;
 
-            const iframe_src = `/download-options?url=${url}`;
+            const iframe_src = `/download-options?url=${url}&all_videos=${all_videos}`;
 
             const existing_iframe = document.getElementById('iframe_download_options');
 
@@ -195,6 +198,7 @@
             }
         }
 
+        // Placeholder functions for the original button logic
         async function like() {
             try {
                 const response = await fetch("/metadata/like", {
@@ -213,6 +217,7 @@
                 console.error(error);
 
             }
+            console.log("Like button clicked!");
         }
 
         async function dislike() {
@@ -233,6 +238,26 @@
                 console.error(error);
 
             }
+            console.log("Dislike button clicked!");
+        }
+
+        // Main function to handle the animation and reset
+        function handleButtonClick(buttonElement) {
+            // Find the SVG inside the clicked button
+            const clickedSvg = buttonElement.querySelector('svg');
+
+            // Apply the "enlarged-svg" class to start the transition
+            clickedSvg.classList.add('enlarged-svg');
+
+            // Find all SVGs to reset them later
+            const allSvgs = document.querySelectorAll('.footer-button svg');
+
+            // Use setTimeout to remove the class from all SVGs after a delay
+            setTimeout(() => {
+                allSvgs.forEach(svg => {
+                    svg.classList.remove('enlarged-svg');
+                });
+            }, 600); // The delay is 600ms, which is slightly longer than the 300ms transition
         }
     </script>
 </body>

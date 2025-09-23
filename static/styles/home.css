@@ -16,12 +16,10 @@ body {
 .container {
   max-width: 800px;
   width: 100%;
-
   display: flex;
   flex-direction: column;
   align-items: center;
   gap: 1.2rem;
-
   background-color: #fff;
   /* White background for form */
   border-radius: 10px;
@@ -29,15 +27,6 @@ body {
   padding: 20px;
   padding-bottom: 2rem;
   text-align: center;
-}
-
-.checkbox-container {
-    display: flex;
-    align-items: center;
-}
-
-.checkbox-container input {
-    margin-right: 10px;
 }
 
 .download_form__content {
@@ -52,6 +41,25 @@ body {
   width: 100%;
   display: flex;
   justify-content: center;
+  flex-direction: column;
+}
+
+.search-container {
+  width: 100%;
+  display: flex;
+  justify-content: center;
+}
+
+.checkbox-container {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-top: 20px;
+}
+
+.checkbox-container input {
+  margin-top: 10px;
+  margin-right: 10px;
 }
 
 h1 {
@@ -117,7 +125,6 @@ input[type="search"]::-webkit-search-cancel-button {
   display: none;
   width: 100%;
   max-width: 710px;
-
   flex-direction: column;
   justify-content: center;
   align-items: center;
@@ -150,26 +157,7 @@ input[type="search"]::-webkit-search-cancel-button {
   }
 }
 
-/* Basic reset and body styling to push footer to the bottom */
-body {
-  margin: 0;
-  min-height: 100vh;
-  /* Ensures the body takes at least the full viewport height */
-  display: flex;
-  flex-direction: column;
-  /* Stacks children vertically */
-  font-family: 'Inter', sans-serif;
-  /* Using Inter font */
-}
-
-/* Main content area to demonstrate footer positioning */
-main {
-  flex-grow: 1;
-  /* Allows main content to take up available space, pushing footer down */
-  padding: 20px;
-  background-color: #f9f9f9;
-  color: #333;
-}
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap');
 
 /* Footer styling */
 footer {
@@ -183,6 +171,7 @@ footer {
   border-top: 1px solid #e0e0e0;
   box-shadow: 0 -2px 5px rgba(0, 0, 0, 0.05);
   /* Subtle shadow for depth */
+  border-radius: 10px;
 }
 
 /* Container for the buttons */
@@ -230,8 +219,6 @@ footer {
 /* Hover effect for buttons */
 .footer-button:hover {
   background-color: #0f0f0f;
-  /*background-color: #e0e0e0;*/
-  /* Light gray background on hover */
   transform: translateY(-1px);
   /* Slight lift effect */
 }
@@ -241,8 +228,6 @@ footer {
   transform: translateY(0);
   /* Resets lift on click */
   background-color: #0f0f0f;
-  /*background-color: #d0d0d0;*/
-  /* Darker background on active */
 }
 
 /* Styling for SVG icons within buttons */
@@ -255,14 +240,19 @@ footer {
   /* Space between icon and text */
   fill: #ffff;
   /* Default icon color */
-  transition: fill 0.3s ease;
-  /* Smooth transition for icon color */
+  /* Add a transition for the transform property */
+  transition: transform 0.3s cubic-bezier(0.68, -0.55, 0.27, 1.55), fill 0.3s ease;
 }
 
 /* Icon color change on button hover */
 .footer-button:hover svg {
   fill: #ffff;
-  /* Icon color remains on hover */
+}
+
+/* The new class to enlarge the SVG */
+.enlarged-svg {
+  transform: scale(1.5);
+  /* Scales the SVG to 150% of its size */
 }
 
 /* Styling for the number span (e.g., like count) */
@@ -271,8 +261,6 @@ footer {
   /* Slightly bolder font for numbers */
   margin-left: 3px;
   /* Small space between text and number */
-  /*color: #555;*/
-  /* Slightly darker color for numbers */
 }
 
 /* Responsive adjustments for smaller screens if needed */
@@ -292,57 +280,5 @@ footer {
     /* Center content within button */
     margin-bottom: 5px;
     /* Space between stacked buttons */
-  }
-}
-
-#share_dialog {
-  border: none;
-  border-radius: 10px;
-  padding: 1rem;
-
-  header {
-    display: flex;
-    justify-content: flex-end;
-
-    .close_dialog {
-      border: none;
-      background-color: transparent;
-      cursor: pointer;
-    }
-  }
-
-  .share_social_media {
-
-    .social_media_list {
-      display: flex;
-      flex-direction: row;
-      gap: 1rem;
-      padding-inline-start: 0;
-
-      li {
-        list-style: none;
-        padding: 1rem;
-        border-radius: 10px;
-        background-color: #e0e0e0;
-        cursor: pointer;
-      }
-    }
-  }
-
-  .share_copy_url {
-
-    .copy_url_container {
-      border-radius: 5px;
-      background-color: #e0e0e0;
-      padding: 1rem;
-    }
-
-    #copy_url_input {
-      -moz-appearance: none;
-      -webkit-appearance: none;
-      appearance: none;
-      border: none;
-      background-color: transparent;
-    }
   }
 }

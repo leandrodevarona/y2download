@@ -67,6 +67,7 @@ def get_download_video_options(formats: list,
                          video_url: str,
                          base_url: str,
                          fullname: str,
+                         all_videos: bool
                          ):
 
     available_resolutions = [f["height"]
@@ -75,33 +76,29 @@ def get_download_video_options(formats: list,
 
     available_resolutions = set(available_resolutions)
 
-    min_bitrate_formats = []
+    resolutions = []
 
     for resolution in available_resolutions:
         filter_formats = [f
-                          for f in formats
-                          if f.get("height", None) == resolution]
+                        for f in formats
+                        if f.get("height", None) == resolution]
 
-        min_bitrate = min(filter_formats, key=lambda format: format["tbr"])
-
-        min_bitrate_formats.append(min_bitrate)
+        if not all_videos:
+            min_bitrate = min(filter_formats, key=lambda format: format["tbr"])
+            resolutions.append(min_bitrate)
+        else:
+            for f in filter_formats:
+                resolutions.append(f)
 
     options = []
 
-    for f in min_bitrate_formats:
-        
+    for f in resolutions:
         file_approx = f.get("filesize_approx", 0)
-
         file_approx = bytes_to_megabytes(file_approx)
-
         format_id = f.get("format_id", '137')
-
         resolution = f.get("height", None)
-
         extension = f.get("ext", 'mp4')
-
         random_str = get_random_string(4)
-
         event_name = f'progressEvent_{format_id}_{random_str}'
 
         if file_approx > 0: # Zero not allowed
@@ -140,19 +137,12 @@ def get_download_audio_options(formats: list,
     options = []
 
     for f in available_audio:
-        
         file_approx = f.get("filesize_approx", 0)
-
         file_approx = bytes_to_megabytes(file_approx)
-
         format_id = f.get("format_id", '233')
-
         quality = f.get("quality", '0')
-
         extension = f.get("ext", 'mp3')
-
         random_str = get_random_string(4)
-
         event_name = f'progressEvent_{format_id}_{random_str}'
 
         if file_approx > 0: # Zero not allowed
@@ -303,20 +293,3 @@ def delete_progress(event_name: str):
         del dl_progress[event_name] # Removes item from dict when download ends
     except:
         print(f'Progress delete error: ', { event_name })
-
-""" NOT NECESSARY
-class ResourceLockedError(Exception):
-    pass
-def unlock_file(file_path):
-    try:
-        os.unlink(file_path)
-        print(f"File '{file_path}' unlocked successfully\n")
-        return Response(status_code=status.HTTP_200_OK)
-    except FileNotFoundError:
-            #raise HTTPException(status_code=404, detail="File not found")
-            print("File not found. Could be already removed\n")
-            return Response(status_code=status.HTTP_404_NOT_FOUND)
-    except ResourceLockedError as e:
-        print(e)
-        return Response(status_code=status.HTTP_423_LOCKED)
-"""
