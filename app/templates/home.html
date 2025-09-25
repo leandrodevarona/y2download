@@ -41,7 +41,7 @@
     <footer>
         <div class="footer-buttons-container">
             <!-- Like Button -->
-            <button class="footer-button" title="I like this" onclick="handleButtonClick(this)">
+            <button class="footer-button" title="I like this" name="like-button" onclick="like(this)">
                 <!-- SVG for Like icon (Thumb Up) -->
                 <svg xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 -960 960 960" width="24px"
                     fill="#e3e3e3">
@@ -52,7 +52,7 @@
             </button>
 
             <!-- Dislike Button -->
-            <button class="footer-button" title="I don't like this" onclick="handleButtonClick(this)">
+            <button class="footer-button" title="I don't like this" name="dislike-button" onclick="dislike(this)">
                 <!-- SVG for Dislike icon (Thumb Down - rotated Like icon) -->
                 <svg xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 -960 960 960" width="24px"
                     fill="#e3e3e3">
@@ -199,50 +199,46 @@
         }
 
         // Placeholder functions for the original button logic
-        async function like() {
+        async function like(buttonElement) {
             try {
                 const response = await fetch("/metadata/like", {
                     method: "PUT"
                 });
-
                 const data = await response.json();
-
                 const likes = data.likes;
-
                 const likesSpan = document.getElementById("likes_value");
                 likesSpan.innerText = likes;
-
             } catch (error) {
-
                 console.error(error);
-
             }
-            console.log("Like button clicked!");
+            console.log(buttonElement.name, "clicked & likes are incremmented!");
+
+            //Now apply the "enlarged-svg" class
+            handleButtonClick(buttonElement);
         }
 
-        async function dislike() {
+        async function dislike(buttonElement) {
             try {
                 const response = await fetch("/metadata/dislike", {
                     method: "PUT"
                 });
-
                 const data = await response.json();
-
                 const dislikes = data.dislikes;
-
                 const dislikesSpan = document.getElementById("dislikes_value");
                 dislikesSpan.innerText = dislikes;
 
             } catch (error) {
-
                 console.error(error);
-
             }
-            console.log("Dislike button clicked!");
+            console.log(buttonElement.name, "clicked & dislikes are incremmented!");
+
+            //Now apply the "enlarged-svg" class
+            handleButtonClick(buttonElement);
         }
 
         // Main function to handle the animation and reset
-        function handleButtonClick(buttonElement) {
+        function handleButtonClick(buttonElement) {  // CAMBIO AQUI IBA THIS
+
             // Find the SVG inside the clicked button
             const clickedSvg = buttonElement.querySelector('svg');
 
