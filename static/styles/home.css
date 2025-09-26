@@ -287,11 +287,9 @@ footer {
   border: none;
   border-radius: 10px;
   padding: 1rem;
-
   header {
     display: flex;
     justify-content: flex-end;
-
     .close_dialog {
       border: none;
       background-color: transparent;
@@ -300,7 +298,6 @@ footer {
   }
 
   .share_social_media {
-
     .social_media_list {
       display: flex;
       flex-direction: row;
@@ -318,7 +315,6 @@ footer {
   }
 
   .share_copy_url {
-
     .copy_url_container {
       border-radius: 5px;
       background-color: #e0e0e0;
