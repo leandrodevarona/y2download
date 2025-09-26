@@ -282,3 +282,55 @@ footer {
     /* Space between stacked buttons */
   }
 }
+
+#share_dialog {
+  border: none;
+  border-radius: 10px;
+  padding: 1rem;
+
+  header {
+    display: flex;
+    justify-content: flex-end;
+
+    .close_dialog {
+      border: none;
+      background-color: transparent;
+      cursor: pointer;
+    }
+  }
+
+  .share_social_media {
+
+    .social_media_list {
+      display: flex;
+      flex-direction: row;
+      gap: 1rem;
+      padding-inline-start: 0;
+
+      li {
+        list-style: none;
+        padding: 1rem;
+        border-radius: 10px;
+        background-color: #e0e0e0;
+        cursor: pointer;
+      }
+    }
+  }
+
+  .share_copy_url {
+
+    .copy_url_container {
+      border-radius: 5px;
+      background-color: #e0e0e0;
+      padding: 1rem;
+    }
+
+    #copy_url_input {
+      -moz-appearance: none;
+      -webkit-appearance: none;
+      appearance: none;
+      border: none;
+      background-color: transparent;
+    }
+  }
+}
